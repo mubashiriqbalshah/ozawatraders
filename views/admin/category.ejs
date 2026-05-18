@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const cat = content.categories[categoryKey]; const pageTitle = 'Edit ' + cat.title; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10 max-w-5xl">
+        <%- include('_flash') %>
+
+        <% const isSlider = cat.display_mode === 'slider'; %>
+
+        <div class="mb-8">
+            <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1"><%= cat.title %></h1>
+            <p class="text-navy-600"><%= isSlider ? 'Slider mode — edit heading and manage carousel images.' : 'Edit category page text and image gallery.' %></p>
+        </div>
+
+        <div class="card p-6 mb-6">
+            <h2 class="font-display text-lg font-bold mb-4"><%= isSlider ? 'Heading' : 'Page Content' %></h2>
+            <form method="POST" action="/admin/category/<%= categoryKey %>/text" class="space-y-4">
+                <div><label class="form-label">Title <span class="text-navy-500 text-xs">(shows as heading on public page)</span></label><input type="text" name="title" value="<%= cat.title %>" class="form-input"></div>
+
+                <% if (isSlider) { %>
+                <!-- Preserve description and display_mode silently -->
+                <input type="hidden" name="description" value="<%= cat.description || '' %>">
+                <input type="hidden" name="display_mode" value="slider">
+                <% } else { %>
+                <div><label class="form-label">Description</label><textarea name="description" rows="3" class="form-input"><%= cat.description %></textarea></div>
+
+                <div class="border-t border-navy-100 pt-4">
+                    <label class="form-label mb-2">Display Mode</label>
+                    <div class="grid sm:grid-cols-2 gap-3">
+                        <label class="flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition <%= (cat.display_mode || 'standard') === 'standard' ? 'border-brand bg-blue-50' : 'border-navy-200 hover:border-navy-300' %>">
+                            <input type="radio" name="display_mode" value="standard" <%= (cat.display_mode || 'standard') === 'standard' ? 'checked' : '' %> class="mt-0.5">
+                            <div>
+                                <div class="font-semibold text-navy-900 text-sm">Standard Layout</div>
+                                <div class="text-xs text-navy-500 mt-0.5">Title + description + products grid + gallery + CTA</div>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition <%= cat.display_mode === 'slider' ? 'border-brand bg-blue-50' : 'border-navy-200 hover:border-navy-300' %>">
+                            <input type="radio" name="display_mode" value="slider" <%= cat.display_mode === 'slider' ? 'checked' : '' %> class="mt-0.5">
+                            <div>
+                                <div class="font-semibold text-navy-900 text-sm">Slider Only</div>
+                                <div class="text-xs text-navy-500 mt-0.5">Just heading + image carousel (gallery images). Hides description, products, CTA.</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <% } %>
+
+                <div class="flex justify-end"><button class="btn-primary"><%= isSlider ? 'Save Heading' : 'Save Content' %></button></div>
+            </form>
+        </div>
+
+        <% const products = Array.isArray(cat.products) ? cat.products : []; %>
+
+        <% if (!isSlider) { %>
+        <div class="card p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-display text-lg font-bold">Products (<%= products.length %>)</h2>
+                <button type="button" onclick="document.getElementById('addProductForm').classList.toggle('hidden')" class="btn-primary text-sm">+ Add Product</button>
+            </div>
+
+            <form id="addProductForm" method="POST" action="/admin/category/<%= categoryKey %>/product/add" enctype="multipart/form-data" class="hidden bg-navy-50 border border-navy-100 rounded-xl p-5 mb-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label class="form-label">ID (slug, optional)</label><input type="text" name="id" class="form-input" placeholder="auto-generated if empty"></div>
+                    <div><label class="form-label">Title <span class="text-red-500">*</span></label><input type="text" name="title" required class="form-input" placeholder="e.g. MT88R — Smart Reclosing MCCB"></div>
+                </div>
+                <div><label class="form-label">Tagline (badge text)</label><input type="text" name="tagline" class="form-input" placeholder="e.g. Sole Distributor in Pakistan"></div>
+                <div><label class="form-label">Image</label><input type="file" name="image" accept="image/*" class="text-sm"><p class="text-xs text-navy-500 mt-1">Or leave empty and set Image Path below</p></div>
+                <div><label class="form-label">Image Path (used if no upload)</label><input type="text" name="image_path" class="form-input" placeholder="/img/manufacturing/micro-feeder.jpg"></div>
+                <div><label class="form-label">Summary</label><textarea name="summary" rows="3" class="form-input" placeholder="Short product description"></textarea></div>
+                <div><label class="form-label">Highlights (one bullet per line)</label><textarea name="highlights" rows="5" class="form-input" placeholder="Frame currents: 125A, 250A, 400A&#10;IEC 60947-2:2024 compliant&#10;..."></textarea></div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="document.getElementById('addProductForm').classList.add('hidden')" class="btn-secondary">Cancel</button>
+                    <button class="btn-primary">Add Product</button>
+                </div>
+            </form>
+
+            <% if (products.length) { %>
+            <div class="space-y-4">
+                <% products.forEach((p, idx) => { %>
+                <details class="border border-navy-100 rounded-xl overflow-hidden bg-white">
+                    <summary class="cursor-pointer p-4 flex items-center gap-4 hover:bg-navy-50">
+                        <div class="w-16 h-16 rounded-lg overflow-hidden bg-navy-100 flex-shrink-0">
+                            <% if (p.image) { %>
+                            <img src="<%= p.image %>" alt="" class="w-full h-full object-cover" onerror="this.style.opacity='0.2'">
+                            <% } %>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-semibold text-navy-900 truncate"><%= p.title %></div>
+                            <% if (p.tagline) { %><div class="text-xs text-blue-700 font-medium"><%= p.tagline %></div><% } %>
+                            <div class="text-xs text-navy-500 truncate"><%= p.summary %></div>
+                        </div>
+                        <span class="text-xs text-navy-400">id: <%= p.id %></span>
+                    </summary>
+                    <div class="p-5 border-t border-navy-100 bg-navy-50/30">
+                        <form method="POST" action="/admin/category/<%= categoryKey %>/product/<%= p.id %>/edit" enctype="multipart/form-data" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label class="form-label">Title</label><input type="text" name="title" value="<%= p.title %>" class="form-input"></div>
+                                <div><label class="form-label">Tagline</label><input type="text" name="tagline" value="<%= p.tagline || '' %>" class="form-input"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-4 items-start">
+                                <div>
+                                    <label class="form-label">Current Image</label>
+                                    <div class="aspect-square rounded-lg overflow-hidden bg-navy-100 border border-navy-200">
+                                        <% if (p.image) { %>
+                                        <img src="<%= p.image %>" class="w-full h-full object-cover" onerror="this.style.opacity='0.2'">
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div><label class="form-label">Replace Image (upload)</label><input type="file" name="image" accept="image/*" class="text-sm"></div>
+                                    <div><label class="form-label">Or set Image Path manually</label><input type="text" name="image_path" value="<%= p.image || '' %>" class="form-input" placeholder="/img/manufacturing/micro-feeder.jpg"></div>
+                                </div>
+                            </div>
+                            <div><label class="form-label">Summary</label><textarea name="summary" rows="3" class="form-input"><%= p.summary || '' %></textarea></div>
+                            <div><label class="form-label">Highlights (one bullet per line)</label><textarea name="highlights" rows="6" class="form-input"><%= (p.highlights || []).join('\n') %></textarea></div>
+                            <div class="flex justify-between gap-2">
+                                <button type="submit" formaction="/admin/category/<%= categoryKey %>/product/<%= p.id %>/delete" formenctype="application/x-www-form-urlencoded" onclick="return confirm('Delete this product?')" class="px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-semibold">Delete</button>
+                                <button class="btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </details>
+                <% }) %>
+            </div>
+            <% } else { %>
+            <p class="text-navy-500 text-sm">No products yet. Click "+ Add Product" above.</p>
+            <% } %>
+        </div>
+        <% } %>
+
+        <div class="card p-6 mb-6">
+            <h2 class="font-display text-lg font-bold mb-4"><%= isSlider ? 'Upload Slider Image' : 'Add Image to Gallery' %></h2>
+            <form method="POST" action="/admin/category/<%= categoryKey %>/add" enctype="multipart/form-data" class="flex flex-wrap gap-3 items-end">
+                <div class="flex-1 min-w-[240px]">
+                    <label class="form-label">Image</label>
+                    <input type="file" name="photo" accept="image/*" required class="text-sm">
+                </div>
+                <button class="btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="font-display text-lg font-bold mb-4"><%= isSlider ? 'Slider Images' : 'Gallery' %> (<%= cat.gallery.length %>)</h2>
+            <% if (cat.gallery.length) { %>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <% cat.gallery.forEach(src => { %>
+                <div class="relative group aspect-square rounded-xl overflow-hidden border border-navy-100">
+                    <img src="<%= src %>" class="w-full h-full object-cover">
+                    <form method="POST" action="/admin/category/<%= categoryKey %>/delete" onsubmit="return confirm('Remove this image?')" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                        <input type="hidden" name="path" value="<%= src %>">
+                        <button class="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </form>
+                </div>
+                <% }) %>
+            </div>
+            <% } else { %>
+            <p class="text-navy-500">No images yet.</p>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

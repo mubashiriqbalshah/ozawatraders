@@ -1,0 +1,158 @@
+<% const path = req.path; %>
+<!-- Top Bar -->
+<div class="hidden md:block bg-navy-950 text-navy-100 text-sm">
+    <div class="max-w-7xl mx-auto px-6 py-2.5 flex justify-between items-center">
+        <div class="flex items-center gap-6">
+            <% if (content.site.phone) { %>
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h2.5a1 1 0 01.95.68l1.5 4.5a1 1 0 01-.5 1.21l-1.7.85a11 11 0 005.5 5.5l.85-1.7a1 1 0 011.21-.5l4.5 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.4 21 3 14.6 3 6V5z"/></svg>
+                <%= content.site.phone %>
+            </span>
+            <% } %>
+            <% if (content.site.email) { %>
+            <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <%= content.site.email %>
+            </span>
+            <% } %>
+        </div>
+        <div class="flex items-center gap-2 text-xs uppercase tracking-wider">
+            <% if (content.site.iso_certified) { %>
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gold-500/15 text-gold-300 border border-gold-500/30">
+                <svg class="w-3 h-3 text-gold-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                ISO Certified
+            </span>
+            <% } %>
+            <span class="text-white/90 font-medium"><%= content.site.tagline %></span>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-navy-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3">
+            <img src="<%= content.site.logo %>" alt="<%= content.site.name %>" class="h-12 w-auto">
+        </a>
+
+        <% const productPaths = ['/rad','/card','/physio','/ambu','/power-cabinet','/matismart-breaker','/earth-resistance-tester','/micro-feeder','/dilution-tank']; const onProducts = productPaths.includes(path); %>
+        <nav class="hidden lg:flex items-center gap-10">
+            <a href="/" class="nav-link font-semibold <%= path === '/' ? 'active text-navy-900' : 'text-navy-700 hover:text-navy-900' %>">Home</a>
+            <div class="relative group">
+                <button type="button" class="nav-link font-semibold flex items-center gap-1 <%= onProducts ? 'active text-navy-900' : 'text-navy-700 hover:text-navy-900' %>">
+                    Products
+                    <svg class="w-4 h-4 transition group-hover:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div class="absolute left-0 top-full pt-3 hidden group-hover:block w-[640px] z-50 -translate-x-32">
+                    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-card-hover border border-navy-100 overflow-hidden">
+                        <div class="h-1 bg-gradient-to-r from-brand via-gold-500 to-brand"></div>
+                        <div class="grid grid-cols-3 gap-0 divide-x divide-navy-100">
+                            <!-- POWER -->
+                            <div class="p-4">
+                                <div class="flex items-center gap-2 px-2 pb-3 mb-2 border-b border-navy-100">
+                                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-brand text-white flex items-center justify-center shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                    </div>
+                                    <span class="text-[11px] uppercase tracking-wider font-bold text-navy-900">Power</span>
+                                </div>
+                                <a href="/power-cabinet" class="group/item flex items-start gap-2 px-2 py-2.5 rounded-lg text-sm font-medium transition <%= path === '/power-cabinet' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-navy-50 hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Power Cabinet</span>
+                                </a>
+                                <a href="/matismart-breaker" class="group/item flex items-start gap-2 px-2 py-2.5 rounded-lg text-sm font-medium transition <%= path === '/matismart-breaker' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-navy-50 hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Matismart Breaker</span>
+                                </a>
+                                <a href="/earth-resistance-tester" class="group/item flex items-start gap-2 px-2 py-2.5 rounded-lg text-sm font-medium transition <%= path === '/earth-resistance-tester' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-navy-50 hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Earth Resistance Tester</span>
+                                </a>
+                            </div>
+                            <!-- INDUSTRIAL -->
+                            <div class="p-4">
+                                <div class="flex items-center gap-2 px-2 pb-3 mb-2 border-b border-navy-100">
+                                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 text-white flex items-center justify-center shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"/></svg>
+                                    </div>
+                                    <span class="text-[11px] uppercase tracking-wider font-bold text-navy-900">Industrial</span>
+                                </div>
+                                <a href="/micro-feeder" class="group/item flex items-start gap-2 px-2 py-2.5 rounded-lg text-sm font-medium transition <%= path === '/micro-feeder' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-navy-50 hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Micro Feeder</span>
+                                </a>
+                                <a href="/dilution-tank" class="group/item flex items-start gap-2 px-2 py-2.5 rounded-lg text-sm font-medium transition <%= path === '/dilution-tank' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-navy-50 hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gold-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Dilution Tank</span>
+                                </a>
+                            </div>
+                            <!-- MEDICAL -->
+                            <div class="p-4 bg-navy-50/40">
+                                <div class="flex items-center gap-2 px-2 pb-3 mb-2 border-b border-navy-100">
+                                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 text-white flex items-center justify-center shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                                    </div>
+                                    <span class="text-[11px] uppercase tracking-wider font-bold text-navy-900">Medical</span>
+                                </div>
+                                <a href="/rad" class="group/item flex items-start gap-2 px-2 py-2 rounded-lg text-sm font-medium transition <%= path === '/rad' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-white hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Radiology</span>
+                                </a>
+                                <a href="/card" class="group/item flex items-start gap-2 px-2 py-2 rounded-lg text-sm font-medium transition <%= path === '/card' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-white hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Cardiology</span>
+                                </a>
+                                <a href="/physio" class="group/item flex items-start gap-2 px-2 py-2 rounded-lg text-sm font-medium transition <%= path === '/physio' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-white hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Physiotherapy</span>
+                                </a>
+                                <a href="/ambu" class="group/item flex items-start gap-2 px-2 py-2 rounded-lg text-sm font-medium transition <%= path === '/ambu' ? 'bg-blue-50 text-brand' : 'text-navy-700 hover:bg-white hover:text-brand' %>">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0 transition group-hover/item:scale-150"></span>
+                                    <span>Ambulances &amp; Mobile Health</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="/customer" class="nav-link font-semibold <%= path === '/customer' ? 'active text-navy-900' : 'text-navy-700 hover:text-navy-900' %>">Customers</a>
+            <a href="/contact" class="nav-link font-semibold <%= path === '/contact' ? 'active text-navy-900' : 'text-navy-700 hover:text-navy-900' %>">Contact</a>
+        </nav>
+
+        <div class="flex items-center gap-3">
+            <button id="themeToggle" type="button" class="p-2 rounded-lg text-navy-700 hover:text-navy-900 hover:bg-navy-50 transition" aria-label="Toggle theme" title="Toggle light/dark">
+                <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"/></svg>
+            </button>
+            <button id="menuBtn" class="lg:hidden p-2 text-navy-900" aria-label="Open menu">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+    </div>
+    <div id="mobileMenu" class="lg:hidden hidden border-t border-navy-100 bg-white">
+        <div class="px-6 py-4 flex flex-col gap-1">
+            <a href="/" class="py-2 font-semibold text-navy-700">Home</a>
+            <details class="py-1">
+                <summary class="cursor-pointer py-2 font-semibold text-navy-700 flex items-center justify-between">
+                    Products
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <div class="pl-4 mt-1 flex flex-col gap-1 border-l-2 border-navy-100">
+                    <div class="pt-1 pb-0.5 text-[10px] uppercase tracking-wider font-bold text-navy-400">Power</div>
+                    <a href="/power-cabinet" class="py-1.5 text-sm text-navy-600">Power Cabinet</a>
+                    <a href="/matismart-breaker" class="py-1.5 text-sm text-navy-600">Matismart Breaker</a>
+                    <a href="/earth-resistance-tester" class="py-1.5 text-sm text-navy-600">Earth Resistance Tester</a>
+                    <div class="pt-2 pb-0.5 text-[10px] uppercase tracking-wider font-bold text-navy-400">Industrial Equipment</div>
+                    <a href="/micro-feeder" class="py-1.5 text-sm text-navy-600">Micro Feeder</a>
+                    <a href="/dilution-tank" class="py-1.5 text-sm text-navy-600">Dilution Tank</a>
+                    <div class="pt-2 pb-0.5 text-[10px] uppercase tracking-wider font-bold text-navy-400">Medical</div>
+                    <a href="/rad" class="py-1.5 text-sm text-navy-600">Radiology</a>
+                    <a href="/card" class="py-1.5 text-sm text-navy-600">Cardiology</a>
+                    <a href="/physio" class="py-1.5 text-sm text-navy-600">Physiotherapy</a>
+                    <a href="/ambu" class="py-1.5 text-sm text-navy-600">Ambulances &amp; Mobile Health</a>
+                </div>
+            </details>
+            <a href="/customer" class="py-2 font-semibold text-navy-700">Customers</a>
+            <a href="/contact" class="py-2 font-semibold text-navy-700">Contact</a>
+        </div>
+    </div>
+</header>

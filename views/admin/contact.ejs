@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = 'Contact Info'; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10 max-w-3xl">
+        <%- include('_flash') %>
+
+        <div class="mb-8">
+            <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1">Contact Information</h1>
+            <p class="text-navy-600">Update contact page heading and details.</p>
+        </div>
+
+        <div class="card p-6">
+            <form method="POST" action="/admin/contact" class="space-y-4">
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div><label class="form-label">Hero Title</label><input type="text" name="hero_title" value="<%= content.contact.hero_title %>" class="form-input"></div>
+                    <div><label class="form-label">Hero Subtitle</label><input type="text" name="hero_subtitle" value="<%= content.contact.hero_subtitle %>" class="form-input"></div>
+                </div>
+                <div><label class="form-label">Address</label><input type="text" name="address" value="<%= content.contact.address %>" class="form-input"></div>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div><label class="form-label">Phone</label><input type="text" name="phone" value="<%= content.contact.phone %>" class="form-input"></div>
+                    <div><label class="form-label">Email</label><input type="text" name="email" value="<%= content.contact.email %>" class="form-input"></div>
+                </div>
+                <div><label class="form-label">Business Hours</label><input type="text" name="hours" value="<%= content.contact.hours %>" class="form-input" placeholder="e.g. Mon-Sat 9 AM - 6 PM"></div>
+
+                <hr class="my-4 border-navy-100">
+                <h3 class="font-display text-base font-bold text-navy-700">Map (Office Location)</h3>
+
+                <div>
+                    <label class="form-label">Map Address <span class="text-navy-500 text-xs">(used for "Find Us" map &amp; "Get Directions" link)</span></label>
+                    <input type="text" name="map_address" value="<%= content.contact.map_address || '' %>" class="form-input" placeholder="e.g. Plot 123, Main Boulevard, Lahore, Pakistan">
+                    <p class="text-xs text-navy-500 mt-1">A simple address — Google Maps will search and show the location automatically.</p>
+                </div>
+
+                <div>
+                    <label class="form-label">Map Embed URL <span class="text-navy-500 text-xs">(recommended for exact pin)</span></label>
+                    <input type="text" name="map_embed_url" value="<%= content.contact.map_embed_url || '' %>" class="form-input font-mono text-xs" placeholder="https://www.google.com/maps/embed?pb=...">
+                    <p class="text-xs text-navy-500 mt-1">
+                        <strong>How to get it from Google Maps:</strong><br>
+                        1. Go to <a href="https://maps.google.com" target="_blank" class="text-brand">maps.google.com</a> and search your office location<br>
+                        2. Click <strong>Share</strong> → <strong>Embed a map</strong> tab<br>
+                        3. Copy ONLY the URL inside <code>src="..."</code> (starts with <code>https://www.google.com/maps/embed?pb=</code>)<br>
+                        4. Paste here and save<br>
+                        <em>If left empty, an OpenStreetMap of the city (auto-detected from address) shows.</em>
+                    </p>
+                </div>
+
+                <div class="flex justify-end pt-2"><button class="btn-primary">Save Contact Info</button></div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

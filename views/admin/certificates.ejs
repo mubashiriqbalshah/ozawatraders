@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = 'Certificates'; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10">
+        <%- include('_flash') %>
+
+        <div class="flex items-center justify-between mb-8 gap-4 flex-wrap">
+            <div>
+                <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1">Certificates</h1>
+                <p class="text-navy-600">Upload, edit or remove certificates shown on the homepage carousel.</p>
+            </div>
+            <button type="button" onclick="document.getElementById('addCert').showModal()" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                Add Certificate
+            </button>
+        </div>
+
+        <% const certs = (content.home.certificates || []); %>
+
+        <% if (certs.length) { %>
+        <div class="grid md:grid-cols-2 gap-5">
+            <% certs.forEach(c => { %>
+            <div class="card p-5">
+                <form method="POST" action="/admin/certificates/<%= c.id %>/edit" enctype="multipart/form-data" class="space-y-3" id="form-<%= c.id %>">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            <img src="<%= c.image %>" class="w-28 h-28 rounded-lg object-contain border border-navy-100 bg-white p-2">
+                            <label class="block mt-2">
+                                <span class="text-xs text-navy-500 block mb-1">Replace image</span>
+                                <input type="file" name="image" accept="image/*" class="text-xs max-w-[160px]">
+                            </label>
+                        </div>
+                        <div class="flex-1 space-y-2">
+                            <div><label class="form-label">Title</label><input type="text" name="title" value="<%= c.title || '' %>" class="form-input" placeholder="e.g. Lahore Tuberculosis Association"></div>
+                            <div><label class="form-label">Subtitle / Details</label><input type="text" name="subtitle" value="<%= c.subtitle || '' %>" class="form-input text-sm" placeholder="e.g. Founders' Day Celebrations — 50 Years of Service"></div>
+                            <div><label class="form-label">Year</label><input type="text" name="year" value="<%= c.year || '' %>" class="form-input text-sm max-w-[120px]" placeholder="e.g. 2004"></div>
+                        </div>
+                    </div>
+                </form>
+                <div class="flex items-center justify-between pt-3 mt-3 border-t border-navy-100">
+                    <span class="text-xs text-navy-500 font-mono">id: <%= c.id %></span>
+                    <div class="flex gap-2">
+                        <button type="submit" form="form-<%= c.id %>" class="btn-primary !py-2 !px-4 !text-sm">Save</button>
+                        <form method="POST" action="/admin/certificates/<%= c.id %>/delete" onsubmit="return confirm('Delete this certificate?')">
+                            <button type="submit" class="btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+        <% } else { %>
+        <div class="card p-10 text-center text-navy-500">
+            <svg class="w-12 h-12 mx-auto mb-3 text-navy-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <p class="font-semibold">No certificates yet.</p>
+            <p class="text-sm mt-1">Click "Add Certificate" to upload your first one.</p>
+        </div>
+        <% } %>
+
+        <dialog id="addCert" class="rounded-2xl p-0 backdrop:bg-navy-950/50 w-full max-w-lg">
+            <form method="POST" action="/admin/certificates/add" enctype="multipart/form-data" class="bg-white p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-display text-xl font-bold">Add New Certificate</h2>
+                    <button type="button" onclick="document.getElementById('addCert').close()" class="text-navy-400 hover:text-navy-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div><label class="form-label">Certificate Image</label><input type="file" name="image" accept="image/*" required class="text-sm"></div>
+                <div><label class="form-label">Title</label><input type="text" name="title" class="form-input" placeholder="e.g. Lahore Tuberculosis Association"></div>
+                <div><label class="form-label">Subtitle / Details</label><input type="text" name="subtitle" class="form-input" placeholder="e.g. Founders' Day Celebrations"></div>
+                <div><label class="form-label">Year</label><input type="text" name="year" class="form-input max-w-[120px]" placeholder="2004"></div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('addCert').close()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Certificate</button>
+                </div>
+            </form>
+        </dialog>
+    </main>
+</body>
+</html>

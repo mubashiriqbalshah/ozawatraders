@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = 'Customers'; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10 max-w-5xl">
+        <%- include('_flash') %>
+
+        <div class="mb-8">
+            <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1">Customers</h1>
+            <p class="text-navy-600">Manage customer logos and the page heading text.</p>
+        </div>
+
+        <%
+            // Backward-compat: if old shape exists, migrate on render
+            let _adminLists = content.customers.lists;
+            if ((!_adminLists || !_adminLists.length) && content.customers.list_items && content.customers.list_items.length) {
+                _adminLists = [{ title: content.customers.list_title || 'Customers', items: content.customers.list_items }];
+            }
+            _adminLists = _adminLists || [];
+        %>
+        <div class="card p-6 mb-6">
+            <h2 class="font-display text-lg font-bold mb-4">Page Heading &amp; Customer Lists</h2>
+            <form method="POST" action="/admin/customers/text" class="space-y-5" id="customersForm">
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div><label class="form-label">Hero Title</label><input type="text" name="hero_title" value="<%= content.customers.hero_title %>" class="form-input"></div>
+                    <div><label class="form-label">Hero Subtitle</label><input type="text" name="hero_subtitle" value="<%= content.customers.hero_subtitle %>" class="form-input"></div>
+                </div>
+
+                <div class="border-t border-navy-100 pt-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-display font-bold text-navy-900">Customer Lists (categories)</h3>
+                        <button type="button" id="addListBtn" class="btn-secondary !py-2 !px-3 !text-sm flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            Add List
+                        </button>
+                    </div>
+
+                    <div id="listsContainer" class="space-y-4">
+                        <% _adminLists.forEach((list, i) => { %>
+                        <div class="list-block rounded-xl border border-navy-200 bg-white p-4" data-idx="<%= i %>">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs uppercase tracking-wider font-bold text-navy-400">List #<span class="list-num"><%= i + 1 %></span></span>
+                                <button type="button" class="remove-list-btn text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    Remove
+                                </button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="grid sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="form-label">Pill (small label)</label>
+                                        <input type="text" name="lists_<%= i %>_subtitle" value="<%= list.subtitle || '' %>" class="form-input list-subtitle-input" placeholder="e.g. Medical">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="form-label">List Title (heading)</label>
+                                        <input type="text" name="lists_<%= i %>_title" value="<%= list.title || '' %>" class="form-input list-title-input" placeholder="e.g. All Government Hospitals">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label">Customer Names (one per line)</label>
+                                    <textarea name="lists_<%= i %>_items" rows="8" class="form-input font-mono text-xs list-items-input"><%
+                                    if (list.items && list.items.length) {
+                                        list.items.forEach((it, j) => {
+                                    %><%= it %><%= j < list.items.length - 1 ? '\n' : '' %><%
+                                        });
+                                    }
+                                    %></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2"><button class="btn-primary">Save All</button></div>
+            </form>
+        </div>
+
+        <template id="listTemplate">
+            <div class="list-block rounded-xl border border-navy-200 bg-white p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs uppercase tracking-wider font-bold text-navy-400">List #<span class="list-num"></span></span>
+                    <button type="button" class="remove-list-btn text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        Remove
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <div class="grid sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="form-label">Pill (small label)</label>
+                            <input type="text" class="form-input list-subtitle-input" placeholder="e.g. Dilution Tank">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="form-label">List Title (heading)</label>
+                            <input type="text" class="form-input list-title-input" placeholder="e.g. Dilution Tank Customers">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Customer Names (one per line)</label>
+                        <textarea rows="8" class="form-input font-mono text-xs list-items-input"></textarea>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <script>
+        (function() {
+            const container = document.getElementById('listsContainer');
+            const addBtn = document.getElementById('addListBtn');
+            const tpl = document.getElementById('listTemplate');
+
+            function renumber() {
+                const blocks = container.querySelectorAll('.list-block');
+                blocks.forEach((b, i) => {
+                    b.dataset.idx = i;
+                    const num = b.querySelector('.list-num');
+                    if (num) num.textContent = i + 1;
+                    const subtitleInput = b.querySelector('.list-subtitle-input');
+                    const titleInput = b.querySelector('.list-title-input');
+                    const itemsInput = b.querySelector('.list-items-input');
+                    if (subtitleInput) subtitleInput.name = 'lists_' + i + '_subtitle';
+                    if (titleInput) titleInput.name = 'lists_' + i + '_title';
+                    if (itemsInput) itemsInput.name = 'lists_' + i + '_items';
+                });
+            }
+
+            function attachRemove(block) {
+                const btn = block.querySelector('.remove-list-btn');
+                if (!btn) return;
+                btn.addEventListener('click', () => {
+                    if (confirm('Remove this list and all its customers?')) {
+                        block.remove();
+                        renumber();
+                    }
+                });
+            }
+
+            container.querySelectorAll('.list-block').forEach(attachRemove);
+
+            addBtn.addEventListener('click', () => {
+                const clone = tpl.content.cloneNode(true);
+                const block = clone.querySelector('.list-block');
+                container.appendChild(clone);
+                attachRemove(block);
+                renumber();
+                // Focus the newly added title input
+                block.querySelector('.list-title-input').focus();
+            });
+        })();
+        </script>
+
+        <div class="card p-6 mb-6">
+            <h2 class="font-display text-lg font-bold mb-4">Add Customer Logo</h2>
+            <form method="POST" action="/admin/customers/add" enctype="multipart/form-data" class="flex flex-wrap gap-3 items-end">
+                <div class="flex-1 min-w-[240px]">
+                    <label class="form-label">Logo Image (PNG with transparent background recommended)</label>
+                    <input type="file" name="logo" accept="image/*" required class="text-sm">
+                </div>
+                <button class="btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="font-display text-lg font-bold mb-4">Current Logos (<%= (content.customers.logos || []).length %>)</h2>
+            <% if ((content.customers.logos || []).length) { %>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <% (content.customers.logos || []).forEach(src => { %>
+                <div class="relative group border border-navy-100 rounded-xl p-4 aspect-square flex items-center justify-center bg-white">
+                    <img src="<%= src %>" class="max-w-full max-h-full object-contain">
+                    <form method="POST" action="/admin/customers/delete" onsubmit="return confirm('Remove this logo?')" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                        <input type="hidden" name="path" value="<%= src %>">
+                        <button class="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </form>
+                </div>
+                <% }) %>
+            </div>
+            <% } else { %>
+            <p class="text-navy-500">No logos uploaded yet.</p>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

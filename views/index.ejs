@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body class="text-navy-900 antialiased">
+    <%- include('partials/header') %>
+
+    <!-- Banner Slider (separate section) -->
+    <section class="relative bg-navy-950 no-bg-anim">
+        <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-gold-500 to-transparent z-10"></div>
+        <div id="heroSlider" class="relative w-full aspect-[1920/600] overflow-hidden shadow-2xl">
+            <% (content.home.hero.slides || []).forEach((src, i) => { %>
+            <div class="hero-slide <%= i === 0 ? 'active' : '' %>" style="background-image: url('<%= src %>')"></div>
+            <% }) %>
+            <% if ((content.home.hero.slides || []).length > 1) { %>
+            <div class="absolute bottom-4 right-4 lg:bottom-6 lg:right-10 flex items-center gap-2 z-10">
+                <% (content.home.hero.slides || []).forEach((_, i) => { %>
+                <button type="button" data-slide="<%= i %>" class="hero-dot <%= i === 0 ? 'active' : '' %>" aria-label="Go to slide <%= i + 1 %>"></button>
+                <% }) %>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- Stats strip -->
+    <% const _statsCount = (content.home.stats || []).length; %>
+    <% const _statsGrid = _statsCount >= 4 ? 'md:grid-cols-4' : (_statsCount === 3 ? 'md:grid-cols-3' : (_statsCount === 2 ? 'md:grid-cols-2' : 'md:grid-cols-1')); %>
+    <section class="bg-navy-950 border-y border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 <%= _statsGrid %> gap-6 text-center">
+            <% content.home.stats.forEach((s, i) => { %>
+            <div class="<%= i > 0 ? 'md:border-l md:border-white/10 md:pl-6' : '' %>">
+                <div class="text-4xl font-extrabold font-display text-white tracking-tight"><%= s.value %><span class="text-gold-400"><%= s.suffix %></span></div>
+                <div class="text-sm text-navy-300 mt-2 uppercase tracking-wider font-medium"><%= s.label %></div>
+            </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section class="py-20 lg:py-28 bg-white/55 backdrop-blur-[2px]">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <span class="premium-badge mb-4">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <%= content.home.about.subtitle %>
+                </span>
+                <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand leading-tight mb-3">
+                    <%= content.home.about.title_pre %> <%= content.home.about.title_highlight %>
+                </h2>
+                <div class="accent-divider mb-6"></div>
+                <%
+                    function _renderRichText(raw, baseClass) {
+                        if (!raw) return '';
+                        const blocks = String(raw).replace(/\r/g, '').split(/\n{2,}/).map(b => b.trim()).filter(Boolean);
+                        const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                        return blocks.map(block => {
+                            const lines = block.split(/\n/).map(l => l.trim()).filter(Boolean);
+                            return '<p class="' + baseClass + '">' + lines.map(esc).join('<br>') + '</p>';
+                        }).join('');
+                    }
+                %>
+                <div class="text-navy-700 leading-relaxed text-justify space-y-4 mb-8">
+                    <%- _renderRichText(content.home.about.paragraph_1, 'text-navy-700 leading-relaxed text-justify') %>
+                    <%- _renderRichText(content.home.about.paragraph_2, 'text-navy-700 leading-relaxed text-justify') %>
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-4 mb-8">
+                    <% content.home.about.features.forEach(f => { %>
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-50 text-brand flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-navy-900 mb-1"><%= f.title %></h4>
+                            <p class="text-sm text-navy-600"><%= f.description %></p>
+                        </div>
+                    </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <!-- Certificates Carousel -->
+            <% const _certs = (content.home.certificates && content.home.certificates.length) ? content.home.certificates : []; %>
+            <% if (_certs.length) { %>
+            <style>
+                #certCarousel { background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%); }
+                #certCarousel .cert-slide { opacity: 0; visibility: hidden; pointer-events: none; }
+                #certCarousel .cert-slide.is-active {
+                    opacity: 1; visibility: visible; pointer-events: auto; z-index: 10;
+                    animation: certFadeIn 0.5s ease-out;
+                }
+                @keyframes certFadeIn { from { opacity: 0; } to { opacity: 1; } }
+                #certCarousel .cert-img-frame {
+                    position: absolute; inset: 0;
+                    display: flex; align-items: center; justify-content: center;
+                    padding: 2.5% 3%;
+                }
+                #certCarousel .cert-img-frame img {
+                    width: 100%; height: 100%;
+                    object-fit: contain;
+                    filter: drop-shadow(0 8px 24px rgba(15, 29, 51, 0.18));
+                    border-radius: 10px;
+                }
+                html.dark #certCarousel { background: linear-gradient(180deg, #0a1a2e 0%, #050f1f 100%); }
+                html.dark #certCarousel .cert-img-frame img { filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5)); }
+                html.dark #certCarousel .border-t { border-color: transparent !important; }
+            </style>
+            <div id="certCarousel" class="relative rounded-3xl overflow-hidden shadow-card">
+                <div class="relative aspect-[4/3]">
+                    <% _certs.forEach((c, i) => { %>
+                    <div class="cert-slide <%= i === 0 ? 'is-active' : '' %>" data-idx="<%= i %>">
+                        <div class="cert-img-frame">
+                            <img src="<%= c.image %>" alt="<%= c.title || 'Certificate' %>">
+                        </div>
+                    </div>
+                    <% }) %>
+
+                    <% if (_certs.length > 1) { %>
+                    <button type="button" class="cert-prev absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 shadow-md flex items-center justify-center hover:bg-white hover:scale-105 text-navy-700 z-20 transition" aria-label="Previous">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <button type="button" class="cert-next absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 shadow-md flex items-center justify-center hover:bg-white hover:scale-105 text-navy-700 z-20 transition" aria-label="Next">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                    <% } %>
+                </div>
+
+                <div class="bg-white border-t border-navy-100 px-5 py-4 flex items-center justify-between gap-4 min-h-[72px]">
+                    <% if (_certs.some(c => c.title || c.subtitle || c.year)) { %>
+                    <div class="flex-1 min-w-0">
+                        <% _certs.forEach((c, i) => { %>
+                        <div class="cert-caption <%= i === 0 ? 'block' : 'hidden' %>" data-idx="<%= i %>">
+                            <% if (c.title) { %><h4 class="font-display font-bold text-navy-900 text-sm leading-snug truncate"><%= c.title %></h4><% } %>
+                            <% if (c.subtitle) { %><p class="text-xs text-navy-600 mt-1 leading-relaxed truncate"><%= c.subtitle %></p><% } %>
+                            <% if (c.year) { %><span class="inline-block mt-1 text-[10px] uppercase tracking-wider font-bold text-brand"><%= c.year %></span><% } %>
+                        </div>
+                        <% }) %>
+                    </div>
+                    <% } else { %><div class="flex-1"></div><% } %>
+
+                    <% if (_certs.length > 1) { %>
+                    <div class="cert-dots flex items-center gap-1.5 flex-shrink-0">
+                        <% _certs.forEach((_, i) => { %>
+                        <button type="button" data-idx="<%= i %>" class="cert-dot h-1.5 rounded-full transition-all <%= i === 0 ? 'bg-brand w-6' : 'bg-navy-200 w-1.5 hover:bg-navy-400' %>" aria-label="Go to <%= i + 1 %>"></button>
+                        <% }) %>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <script>
+            (function() {
+                const carousel = document.getElementById('certCarousel');
+                if (!carousel) return;
+                const slides = carousel.querySelectorAll('.cert-slide');
+                const captions = carousel.querySelectorAll('.cert-caption');
+                const dots = carousel.querySelectorAll('.cert-dot');
+                const prev = carousel.querySelector('.cert-prev');
+                const next = carousel.querySelector('.cert-next');
+                if (slides.length <= 1) return;
+                let current = 0;
+                let timer;
+                function show(idx) {
+                    slides.forEach((s, i) => s.classList.toggle('is-active', i === idx));
+                    captions.forEach((c, i) => {
+                        c.classList.toggle('block', i === idx);
+                        c.classList.toggle('hidden', i !== idx);
+                    });
+                    dots.forEach((d, i) => {
+                        if (i === idx) { d.classList.add('bg-brand', 'w-6'); d.classList.remove('bg-navy-200', 'w-1.5'); }
+                        else { d.classList.remove('bg-brand', 'w-6'); d.classList.add('bg-navy-200', 'w-1.5'); }
+                    });
+                    current = idx;
+                }
+                function autoplay() { timer = setInterval(() => show((current + 1) % slides.length), 5000); }
+                function reset() { clearInterval(timer); autoplay(); }
+                prev && prev.addEventListener('click', () => { show((current - 1 + slides.length) % slides.length); reset(); });
+                next && next.addEventListener('click', () => { show((current + 1) % slides.length); reset(); });
+                dots.forEach((d, i) => d.addEventListener('click', () => { show(i); reset(); }));
+                autoplay();
+            })();
+            </script>
+            <% } else { %>
+            <!-- Empty state -->
+            <div class="rounded-2xl border-2 border-dashed border-navy-200 bg-navy-50/30 p-12 text-center min-h-[400px] flex flex-col items-center justify-center">
+                <div class="w-20 h-20 rounded-full bg-blue-50 text-brand flex items-center justify-center mb-5">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <p class="font-display font-bold text-navy-900 text-lg">Certifications & Awards</p>
+                <p class="text-navy-600 text-sm mt-2 max-w-xs">Admin panel se certificates upload karein — yahan carousel ke roop mein dikhain ge.</p>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- Products -->
+    <% if (content.home.products_section.enabled !== false) { %>
+    <section id="products" class="py-20 lg:py-28 bg-navy-50/50 border-y border-navy-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="max-w-3xl mb-14">
+                <span class="premium-badge mb-4">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <%= content.home.products_section.subtitle %>
+                </span>
+                <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold text-navy-900 leading-tight mb-3"><%= content.home.products_section.title %></h2>
+                <div class="accent-divider mb-5"></div>
+                <p class="text-navy-700 leading-relaxed"><%= content.home.products_section.description %></p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <% content.products.forEach(p => { %>
+                <a href="<%= p.href %>" class="product-card group bg-white rounded-2xl p-8 shadow-card hover:shadow-card-hover border border-navy-100">
+                    <div class="icon-wrap w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6">
+                        <img src="<%= p.icon %>" alt="" class="w-8 h-8 object-contain">
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-navy-900 mb-3"><%= p.title %></h3>
+                    <p class="text-navy-600 text-sm leading-relaxed mb-5"><%= p.description %></p>
+                    <span class="inline-flex items-center gap-1.5 text-brand font-semibold text-sm group-hover:gap-2.5 transition-all">
+                        Learn more
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                    </span>
+                </a>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+    <% } %>
+
+    <!-- Why Choose Us -->
+    <%
+        const _whyRaw = (content.home.why_us.description || '').replace(/\r/g, '');
+        const _whyLines = _whyRaw.split('\n').map(s => s.trim()).filter(Boolean);
+        const _whyIntro = [];
+        const _whyFeatures = [];
+        for (const _l of _whyLines) {
+            if (/^[✅✓✔]/.test(_l)) {
+                const _t = _l.replace(/^[✅✓✔]\s*/, '');
+                const _dash = _t.search(/\s[—–-]\s/);
+                if (_dash >= 0) {
+                    _whyFeatures.push({ title: _t.slice(0, _dash).trim(), desc: _t.slice(_dash).replace(/^\s[—–-]\s*/, '').trim() });
+                } else {
+                    _whyFeatures.push({ title: _t.trim(), desc: '' });
+                }
+            } else {
+                _whyIntro.push(_l);
+            }
+        }
+    %>
+    <section class="py-20 lg:py-28 bg-white/55 backdrop-blur-[2px]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <span class="premium-badge mb-4 mx-auto">
+                    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <%= content.home.why_us.subtitle %>
+                </span>
+                <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-extrabold text-navy-900 leading-tight mb-3"><%= content.home.why_us.title %></h2>
+                <div class="accent-divider mx-auto mb-5"></div>
+                <% if (_whyIntro.length) { %>
+                <p class="text-navy-700 leading-relaxed"><%= _whyIntro.join(' ') %></p>
+                <% } %>
+            </div>
+
+            <% if (_whyFeatures.length) { %>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-14">
+                <% _whyFeatures.forEach(f => { %>
+                <div class="group rounded-xl border border-navy-100 bg-white p-5 flex gap-4 items-start hover:border-brand/30 hover:shadow-card transition">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-50 text-brand flex items-center justify-center group-hover:bg-brand group-hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h4 class="font-display font-bold text-navy-900 text-sm leading-snug mb-1"><%= f.title %></h4>
+                        <% if (f.desc) { %>
+                        <p class="text-navy-600 text-xs leading-relaxed"><%= f.desc %></p>
+                        <% } %>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+            <% } %>
+
+            <% if (content.home.why_us.items && content.home.why_us.items.length) { %>
+            <div class="grid md:grid-cols-3 gap-6">
+                <% content.home.why_us.items.forEach(item => { %>
+                <div class="rounded-2xl border border-navy-100 p-8 hover:border-brand/30 hover:shadow-card transition">
+                    <div class="w-12 h-12 rounded-lg bg-brand text-white flex items-center justify-center mb-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <h3 class="font-display text-xl font-bold text-navy-900 mb-3"><%= item.title %></h3>
+                    <p class="text-navy-600 text-sm leading-relaxed"><%= item.description %></p>
+                </div>
+                <% }) %>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 lg:py-20 bg-navy-950 relative overflow-hidden">
+        <div class="absolute inset-0 hero-grid opacity-30"></div>
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-600/20 to-transparent"></div>
+
+        <div class="relative max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="font-display text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3"><%= content.home.cta.title %></h2>
+                <p class="text-navy-200 leading-relaxed"><%= content.home.cta.description %></p>
+            </div>
+            <div class="flex flex-wrap gap-4 md:justify-end">
+                <a href="<%= content.home.cta.primary_href %>" class="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-br from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 text-white rounded-lg font-semibold transition shadow-accent">
+                    <%= content.home.cta.primary_text %>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+                <a href="<%= content.home.cta.secondary_href %>" class="inline-flex items-center gap-2 px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg font-semibold backdrop-blur-sm transition">
+                    <%= content.home.cta.secondary_text %>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <%- include('partials/footer') %>
+
+    <script>
+        (function() {
+            const slider = document.getElementById('heroSlider');
+            if (!slider) return;
+            const slides = slider.querySelectorAll('.hero-slide');
+            const dots = slider.querySelectorAll('.hero-dot');
+            if (slides.length < 2) return;
+            let i = 0, paused = false;
+            function go(n) {
+                slides[i].classList.remove('active');
+                dots[i] && dots[i].classList.remove('active');
+                i = (n + slides.length) % slides.length;
+                slides[i].classList.add('active');
+                dots[i] && dots[i].classList.add('active');
+            }
+            const timer = setInterval(() => { if (!paused) go(i + 1); }, 5000);
+            slider.addEventListener('mouseenter', () => paused = true);
+            slider.addEventListener('mouseleave', () => paused = false);
+            dots.forEach((d, idx) => d.addEventListener('click', () => go(idx)));
+        })();
+    </script>
+</body>
+</html>

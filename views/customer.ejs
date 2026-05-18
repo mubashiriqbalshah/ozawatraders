@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = content.customers.hero_title + ' — ' + content.site.name; %>
+    <%- include('partials/head', { pageTitle }) %>
+</head>
+<body class="text-navy-900 antialiased">
+    <%- include('partials/header') %>
+
+    <section class="hero-bg relative overflow-hidden text-white pt-28 md:pt-32 lg:pt-40 pb-20 lg:pb-28">
+        <div class="hero-grid absolute inset-0"></div>
+        <div class="hero-watermark"><img src="<%= content.site.logo %>" alt=""></div>
+        <div class="relative max-w-7xl mx-auto px-6 text-center">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/15 text-gold-200 border border-gold-500/30 text-sm font-semibold mb-4">
+                <svg class="w-3.5 h-3.5 text-gold-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <%= content.customers.hero_subtitle %>
+            </span>
+            <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight"><%= content.customers.hero_title %></h1>
+            <div class="accent-divider mx-auto mt-5"></div>
+        </div>
+    </section>
+
+    <%
+        // Backward-compat: support old single-list shape
+        let _custLists = content.customers.lists;
+        if ((!_custLists || !_custLists.length) && content.customers.list_items && content.customers.list_items.length) {
+            _custLists = [{ title: content.customers.list_title || 'Customers', items: content.customers.list_items }];
+        }
+        _custLists = _custLists || [];
+    %>
+    <section class="py-20 lg:py-28 bg-white/55 backdrop-blur-[2px]">
+        <div class="max-w-5xl mx-auto px-6">
+            <% if (!_custLists.length) { %>
+            <p class="text-center text-navy-500">No customers listed yet.</p>
+            <% } %>
+
+            <% _custLists.forEach((list, listIdx) => { %>
+            <div class="<%= listIdx > 0 ? 'mt-16 pt-12 border-t border-navy-100' : '' %>">
+                <div class="text-center mb-10">
+                    <span class="premium-badge mb-4 mx-auto">
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <%= list.subtitle || 'Customers List' %>
+                    </span>
+                    <h2 class="font-display text-3xl md:text-4xl font-extrabold text-navy-900 leading-tight"><%= list.title %></h2>
+                    <div class="accent-divider mx-auto mt-4"></div>
+                </div>
+
+                <% if ((list.items || []).length) { %>
+                <div class="grid md:grid-cols-2 gap-x-6 gap-y-3">
+                    <% list.items.forEach((name, i) => { %>
+                    <div class="group flex items-start gap-3 p-4 rounded-xl border border-navy-100 hover:border-brand/30 hover:shadow-card transition bg-white">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 text-brand flex items-center justify-center group-hover:from-brand group-hover:to-blue-700 group-hover:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                        </div>
+                        <p class="text-navy-700 leading-relaxed pt-2"><%= name %></p>
+                    </div>
+                    <% }) %>
+                </div>
+                <% } %>
+            </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($sshDir = \"$env:USERPROFILE\\\\.ssh\"; if \\(-not \\(Test-Path $sshDir\\)\\) { New-Item -ItemType Directory -Path $sshDir -Force | Out-Null }; $keyPath = \"$sshDir\\\\ozawa_ec2\"; ssh-keygen -t ed25519 -f $keyPath -N '\"\"' -C \"ozawa-ec2-access\" 2>&1; Write-Output \"\"; Write-Output \"=== PUBLIC KEY \\(yeh copy karna hai\\) ===\"; Get-Content \"$keyPath.pub\")"
+    ]
+  }
+}

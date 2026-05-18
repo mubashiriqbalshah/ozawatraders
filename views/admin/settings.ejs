@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = 'Settings'; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10 max-w-3xl">
+        <%- include('_flash') %>
+
+        <div class="mb-8">
+            <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1">Settings</h1>
+            <p class="text-navy-600">Account credentials and site logo.</p>
+        </div>
+
+        <div class="card p-6 mb-6">
+            <h2 class="font-display text-lg font-bold mb-4">Site Logo</h2>
+            <form method="POST" action="/admin/settings/logo" enctype="multipart/form-data" class="flex flex-wrap items-end gap-4">
+                <img src="<%= content.site.logo %>" class="h-16 w-auto">
+                <div class="flex-1 min-w-[240px]">
+                    <label class="form-label">Replace Logo</label>
+                    <input type="file" name="logo" accept="image/*" required class="text-sm">
+                </div>
+                <button class="btn-primary">Upload Logo</button>
+            </form>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="font-display text-lg font-bold mb-4">Change Password</h2>
+
+            <% if (error) { %>
+            <div class="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium"><%= error %></div>
+            <% } %>
+            <% if (success) { %>
+            <div class="mb-4 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm font-medium"><%= success %></div>
+            <% } %>
+
+            <form method="POST" action="/admin/settings/password" class="space-y-4">
+                <div><label class="form-label">Current Password</label><input type="password" name="current" required class="form-input"></div>
+                <div><label class="form-label">New Password (min 6 chars)</label><input type="password" name="next" required minlength="6" class="form-input"></div>
+                <div class="flex justify-end pt-2"><button class="btn-primary">Update Password</button></div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

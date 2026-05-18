@@ -1,0 +1,35 @@
+<div class="lg:hidden bg-navy-950 text-white px-6 py-4 flex items-center justify-between">
+    <a href="/admin" class="flex items-center gap-3">
+        <img src="<%= content.site.logo %>" alt="" class="h-9 w-auto">
+        <span class="font-display font-bold">Admin</span>
+    </a>
+    <button id="adminMenuBtn" class="p-2" aria-label="Open menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+</div>
+<div id="adminMobileMenu" class="lg:hidden hidden bg-navy-950 text-white border-t border-navy-800">
+    <nav class="py-2 px-3 space-y-1">
+        <a href="/admin" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Dashboard</a>
+        <a href="/admin/home" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Home Page</a>
+        <a href="/admin/products" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Products</a>
+        <a href="/admin/customers" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Customers</a>
+        <a href="/admin/category/rad" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Radiology</a>
+        <a href="/admin/category/card" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Cardiology</a>
+        <a href="/admin/category/physio" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Physiotherapy</a>
+        <a href="/admin/category/ambu" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Ambulances</a>
+        <a href="/admin/category/power-cabinet" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Power Cabinet</a>
+        <a href="/admin/category/matismart-breaker" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Matismart Breaker</a>
+        <a href="/admin/category/earth-resistance-tester" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Earth Resistance Tester</a>
+        <a href="/admin/category/micro-feeder" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Micro Feeder</a>
+        <a href="/admin/category/dilution-tank" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Dilution Tank</a>
+        <a href="/admin/certificates" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Certificates</a>
+        <a href="/admin/contact" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Contact</a>
+        <a href="/admin/settings" class="block px-3 py-2 rounded text-sm font-medium hover:bg-navy-800">Settings</a>
+        <form method="POST" action="/admin/logout" class="px-3 py-2"><button class="text-red-300 hover:text-red-200 text-sm font-semibold">Logout</button></form>
+    </nav>
+</div>
+<script>
+    document.getElementById('adminMenuBtn')?.addEventListener('click', () => {
+        document.getElementById('adminMobileMenu')?.classList.toggle('hidden');
+    });
+</script>

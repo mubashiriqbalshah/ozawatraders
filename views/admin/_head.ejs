@@ -1,0 +1,33 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Admin' %> — <%= content.site.name %></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    navy: { 50:'#f0f4fa',100:'#dae4f1',200:'#b6c9e3',300:'#8aa7cf',400:'#5d82b6',500:'#3f649b',600:'#2f4f7e',700:'#264166',800:'#1a2f4a',900:'#0f1d33',950:'#0a142b' },
+                    brand: { DEFAULT: '#1e3a8a', light: '#3b82f6', dark: '#0f1d33' }
+                },
+                fontFamily: { sans: ['Inter','sans-serif'], display: ['Plus Jakarta Sans','Inter','sans-serif'] }
+            }
+        }
+    }
+</script>
+<style type="text/tailwindcss">
+    body { font-family: 'Inter', sans-serif; }
+    .font-display { font-family: 'Plus Jakarta Sans','Inter',sans-serif; }
+    @layer components {
+        .form-input { @apply w-full px-4 py-2.5 rounded-lg border border-navy-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition text-navy-900; }
+        .form-label { @apply block text-sm font-semibold text-navy-700 mb-1.5; }
+        .btn-primary { @apply inline-flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-lg font-semibold hover:bg-navy-800 transition shadow-sm; }
+        .btn-secondary { @apply inline-flex items-center gap-2 px-5 py-2.5 bg-white text-navy-800 border border-navy-200 rounded-lg font-semibold hover:bg-navy-50 transition; }
+        .btn-danger { @apply inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-semibold hover:bg-red-100 transition; }
+        .card { @apply bg-white rounded-2xl border border-navy-100 shadow-sm; }
+    }
+</style>

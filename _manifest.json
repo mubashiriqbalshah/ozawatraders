@@ -1,0 +1,66 @@
+{
+  "scrapedAt": "2026-04-29T20:49:33.389Z",
+  "total": 110,
+  "failed": [
+    {
+      "url": "http://ozawatraders.org/data/settings.json",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/data/products.json",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/admin.html",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/img/testimonial-logo.png",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/owl.video.play.png",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/%22images%2Fui-icons_444444_256x240.png%22",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/%22images%2Fui-icons_777620_256x240.png%22",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/%22images%2Fui-icons_555555_256x240.png%22",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/%22images%2Fui-icons_cc0000_256x240.png%22",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/%22images%2Fui-icons_777777_256x240.png%22",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/%22images%2Fui-icons_ffffff_256x240.png%22",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/images/ui-icons_ffffff_256x240.png",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/images/ui-icons_777777_256x240.png",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/images/ui-icons_777620_256x240.png",
+      "error": "HTTP 404"
+    },
+    {
+      "url": "http://ozawatraders.org/css/images/ui-icons_cc0000_256x240.png",
+      "error": "HTTP 404"
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = content.contact.hero_title + ' — ' + content.site.name; %>
+    <%- include('partials/head', { pageTitle }) %>
+</head>
+<body class="text-navy-900 antialiased">
+    <%- include('partials/header') %>
+
+    <section class="hero-bg relative overflow-hidden text-white pt-28 md:pt-32 lg:pt-40 pb-20 lg:pb-28">
+        <div class="hero-grid absolute inset-0"></div>
+        <div class="hero-watermark"><img src="<%= content.site.logo %>" alt=""></div>
+        <div class="relative max-w-7xl mx-auto px-6 text-center">
+            <span class="inline-block px-3 py-1 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30 text-sm font-semibold mb-4"><%= content.contact.hero_subtitle %></span>
+            <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight"><%= content.contact.hero_title %></h1>
+        </div>
+    </section>
+
+    <section class="py-20 lg:py-28 bg-white/55 backdrop-blur-[2px]">
+        <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
+            <div class="space-y-6">
+                <div class="rounded-2xl border border-navy-100 p-6 shadow-card flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-brand text-white flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-navy-900 mb-1">Address</h3>
+                        <p class="text-navy-600"><%= content.contact.address %></p>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-navy-100 p-6 shadow-card flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-brand text-white flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h2.5a1 1 0 01.95.68l1.5 4.5a1 1 0 01-.5 1.21l-1.7.85a11 11 0 005.5 5.5l.85-1.7a1 1 0 011.21-.5l4.5 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.4 21 3 14.6 3 6V5z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-navy-900 mb-1">Phone</h3>
+                        <p class="text-navy-600"><%= content.contact.phone %></p>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-navy-100 p-6 shadow-card flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-brand text-white flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-navy-900 mb-1">Email</h3>
+                        <p class="text-navy-600"><%= content.contact.email %></p>
+                    </div>
+                </div>
+
+                <% if (content.contact.hours) { %>
+                <div class="rounded-2xl border border-navy-100 p-6 shadow-card flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-lg bg-brand text-white flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold text-lg text-navy-900 mb-1">Hours</h3>
+                        <p class="text-navy-600"><%= content.contact.hours %></p>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+
+            <div class="rounded-2xl bg-navy-50 border border-navy-100 p-8">
+                <h3 class="font-display text-2xl font-bold text-navy-900 mb-2">Send us a message</h3>
+                <p class="text-navy-600 text-sm mb-6">Fill in the form and our team will get back to you shortly.</p>
+
+                <% if (req.query.error) { %>
+                <div class="mb-5 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm font-medium">
+                    <%= req.query.error === 'invalid' ? 'Please fill in all required fields with valid information.' : 'Something went wrong. Please try again.' %>
+                </div>
+                <% } %>
+
+                <form method="POST" action="/contact" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-navy-700 mb-1">Name <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" required maxlength="100" class="w-full px-4 py-3 rounded-lg border border-navy-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-navy-700 mb-1">Email <span class="text-red-500">*</span></label>
+                        <input type="email" name="email" required maxlength="150" class="w-full px-4 py-3 rounded-lg border border-navy-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-navy-700 mb-1">Phone</label>
+                        <input type="tel" name="phone" maxlength="40" class="w-full px-4 py-3 rounded-lg border border-navy-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-navy-700 mb-1">Subject</label>
+                        <input type="text" name="subject" maxlength="200" class="w-full px-4 py-3 rounded-lg border border-navy-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-navy-700 mb-1">Message <span class="text-red-500">*</span></label>
+                        <textarea rows="5" name="message" required maxlength="5000" class="w-full px-4 py-3 rounded-lg border border-navy-200 focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition"></textarea>
+                    </div>
+                    <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;" aria-hidden="true">
+                    <button type="submit" class="w-full px-6 py-3.5 bg-brand text-white rounded-lg font-semibold hover:bg-navy-800 transition shadow-md">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <% const _mapAddr = (content.contact.map_address || content.contact.address || '').trim();
+       const _mapEmbed = (content.contact.map_embed_url || '').trim();
+       // Fallback: OpenStreetMap embed (no API key, iframe-friendly). Default to Lahore area.
+       // City-keyed default bbox + marker. Admin can paste Google Maps "Share→Embed" URL for exact pin.
+       const _osmCities = {
+           lahore:    { bbox: '74.18,31.43,74.50,31.65', marker: '31.55,74.34' },
+           karachi:   { bbox: '67.00,24.78,67.30,25.05', marker: '24.86,67.00' },
+           islamabad: { bbox: '72.93,33.62,73.20,33.78', marker: '33.69,73.05' },
+           rawalpindi:{ bbox: '72.95,33.55,73.15,33.70', marker: '33.60,73.04' },
+           multan:    { bbox: '71.40,30.10,71.60,30.30', marker: '30.19,71.46' },
+           faisalabad:{ bbox: '73.03,31.35,73.18,31.50', marker: '31.42,73.09' },
+           peshawar:  { bbox: '71.45,33.95,71.65,34.10', marker: '34.01,71.55' },
+           pakistan:  { bbox: '60.87,23.69,77.82,37.10', marker: '30.37,69.34' }
+       };
+       let _osm = _osmCities.lahore;
+       const _addrLower = _mapAddr.toLowerCase();
+       for (const k of Object.keys(_osmCities)) {
+           if (_addrLower.includes(k)) { _osm = _osmCities[k]; break; }
+       }
+       const _osmSrc = 'https://www.openstreetmap.org/export/embed.html?bbox=' + _osm.bbox + '&layer=mapnik&marker=' + _osm.marker;
+       const _mapSrc = _mapEmbed || _osmSrc;
+       const _mapDirHref = _mapAddr ? ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(_mapAddr)) : '#'; %>
+    <% if (_mapSrc) { %>
+    <section class="pb-20 lg:pb-28 bg-white/55 backdrop-blur-[2px]">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="rounded-2xl overflow-hidden border border-navy-100 shadow-card bg-navy-50">
+                <div class="px-6 py-4 bg-white border-b border-navy-100 flex items-center justify-between gap-3 flex-wrap">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-brand text-white flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-navy-900 text-lg leading-tight">Find Us</h3>
+                            <p class="text-sm text-navy-600 mt-0.5"><%= _mapAddr || 'Our office location' %></p>
+                        </div>
+                    </div>
+                    <% if (_mapAddr) { %>
+                    <a href="<%= _mapDirHref %>" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-navy-800 transition shadow-sm">
+                        Get Directions
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                    <% } %>
+                </div>
+                <div class="aspect-[16/9] sm:aspect-[16/7] w-full bg-navy-100">
+                    <iframe src="<%= _mapSrc %>" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Office location map"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+    <% } %>
+
+    <!-- Success Popup -->
+    <div id="successModal" class="fixed inset-0 z-[100] hidden items-center justify-center px-4" aria-hidden="true">
+        <div class="absolute inset-0 bg-navy-950/70 backdrop-blur-sm" id="modalBackdrop"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center" style="animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;">
+            <div class="w-16 h-16 rounded-full bg-green-100 mx-auto mb-5 flex items-center justify-center">
+                <svg class="w-9 h-9 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="animation: check-draw 0.5s 0.2s ease-out both;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <h3 class="font-display text-2xl font-extrabold text-navy-900 mb-2">Message Sent Successfully</h3>
+            <p class="text-navy-600 mb-6 leading-relaxed">Thank you for reaching out. Our team will get back to you shortly.</p>
+            <button type="button" id="modalClose" class="w-full px-6 py-3 bg-brand text-white rounded-lg font-semibold hover:bg-navy-800 transition shadow-md">
+                OK
+            </button>
+        </div>
+    </div>
+    <style>
+        @keyframes pop-in { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes check-draw { from { transform: scale(0); } 50% { transform: scale(1.2); } to { transform: scale(1); } }
+        #successModal.show { display: flex; }
+    </style>
+    <script>
+        (function() {
+            const modal = document.getElementById('successModal');
+            const closeBtn = document.getElementById('modalClose');
+            const backdrop = document.getElementById('modalBackdrop');
+            function open() {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            }
+            function close() {
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+            const params = new URLSearchParams(location.search);
+            if (params.get('sent') === '1') {
+                open();
+                params.delete('sent');
+                const newUrl = location.pathname + (params.toString() ? '?' + params.toString() : '');
+                history.replaceState(null, '', newUrl);
+            }
+            closeBtn.addEventListener('click', close);
+            backdrop.addEventListener('click', close);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+        })();
+    </script>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

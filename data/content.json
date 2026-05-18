@@ -1,0 +1,527 @@
+{
+  "site": {
+    "name": "Ozawa Traders",
+    "logo": "/img/logo.png",
+    "phone": "+92 3054767799",
+    "email": "ozawatraders786@gmail.com",
+    "iso_certified": true,
+    "tagline": "25+ Years of Excellence",
+    "trusted_since": "Trusted Since 2000+",
+    "meta_subtitle": "Industrial, Power & Medical Solutions",
+    "meta_description": "Ozawa Traders Pvt Ltd — Leading Industrial, Power & Medical Solution Provider in Pakistan with 20+ years of experience.",
+    "meta_keywords": "Ozawa Traders, Industrial solutions, Power, Medical equipment, LESCO, MEPCO, Radiology, Cardiology, Physiotherapy, Ambulances, Pakistan"
+  },
+  "home": {
+    "hero": {
+      "title_pre": "Power",
+      "title_highlight": "Industrial,  Medical &",
+      "title_post": "Infrastructure",
+      "description": "OZAWA TRADERS Pvt Ltd is one of the leading Manufacturer, Importer, Distributor and Supplier of Electro-medical Equipment /Micro feeders / stainless steel products and Ambulances in Pakistan. We have more than 25+ years of professional experience in this field.  The establishment has employed qualified & experienced staff.  You can trust on us for providing cost effective and reliable products with excellent after sale service.\r\nSupplier of \r\nMicro Feeders and Stainless-Steel Medical Grade Products\r\nPower/ Medical Solution \r\nAmbulances fabricators /Mobile Heath Unit\r\n",
+      "image_1": "/img/about/about-1.jpg",
+      "image_2": "/img/about/about-2.jpg",
+      "slides": [
+        "/img/sliders/hero-1.jpg",
+        "/img/sliders/hero-2.jpg",
+        "/img/sliders/hero-3.jpg"
+      ],
+      "cta_primary_text": "",
+      "cta_primary_href": "#",
+      "cta_secondary_text": "",
+      "cta_secondary_href": "#"
+    },
+    "stats": [
+      {
+        "value": "25",
+        "suffix": "+",
+        "label": "Years Experience"
+      },
+      {
+        "value": "2000",
+        "suffix": "+",
+        "label": "Trusted Clients"
+      },
+      {
+        "value": "PK",
+        "suffix": "",
+        "label": "Nationwide Reach"
+      }
+    ],
+    "about": {
+      "subtitle": "About Us",
+      "title_pre": "Welcome to",
+      "title_highlight": "Ozawa Traders",
+      "paragraph_1": "OZAWA TRADERS Pvt Ltd  is one of the leading Manufacturer, and Supplier of Electro-medical Equipment /Micro feeders /Dilution Tank / stainless steel products and Ambulances  in Pakistan. We have more than 30 years of professional experience in this field.  The establishment has employed qualified & experienced staff.  You can trust on us for providing cost effective and reliable products with excellent after sale service.\r\n\r\nSupplier of \r\nMicro Feeders and Stainless Steel Medical Grade  Products\r\nPower Equipment's / Medical Solution \r\nAmbulances fabricators  /Mobile Heath Unit",
+      "paragraph_2": "You can trust us to provide cost-effective, reliable products backed by exceptional after-sales service.",
+      "image_1": "/img/uploads/1778153619192-IMG_6253.jpeg",
+      "image_2": "/img/uploads/1778153619193-IMG_6256.jpeg",
+      "quote": "Supplier of Industrial & Power / Medical Solutions across Pakistan.",
+      "features": [
+        {
+          "title": "ISO Certified",
+          "description": "Quality and process standards verified."
+        },
+        {
+          "title": "Reliable Solutions",
+          "description": "Cost-effective products built to last."
+        },
+        {
+          "title": "Expert Team",
+          "description": "Qualified, experienced professionals."
+        },
+        {
+          "title": "After-Sales Support",
+          "description": "Excellent service throughout the lifecycle."
+        }
+      ]
+    },
+    "products_section": {
+      "enabled": false,
+      "subtitle": "What We Do",
+      "title": "Our Products & Solutions",
+      "description": "A diverse portfolio across industrial, power, and medical equipment — engineered for reliability and supported end-to-end."
+    },
+    "why_us": {
+      "subtitle": "Why Ozawa Traders",
+      "title": "Why Choose Ozawa Traders?",
+      "description": "When it comes to electrical protection and industrial supply, trust matters. Here's why hundreds of clients across Pakistan rely on us:\r\n\r\n✅ Sole Distributor of Matismart in Pakistan — Exclusive access to genuine AIoT Smart MCCBs\r\n✅ 100% Authentic Products — Every item sourced from certified manufacturers\r\n✅ IEC Certified Quality — Compliant with international safety standards (IEC 60947-2)\r\n✅ Competitive Pricing — Best rates for both retail and bulk project orders\r\n✅ Nationwide Delivery — Fast and reliable supply across Pakistan\r\n✅ Expert Technical Support — Pre-sales consultation and after-sales assistance\r\n✅ Wide Product Range — From standard breakers to smart, cloud-connected solutions\r\n✅ Trusted by Industries — Proven partner for residential, commercial & industrial projects",
+      "items": [
+        {
+          "title": "Quality Certified",
+          "description": "ISO-certified processes ensure every product and service meets international quality benchmarks."
+        },
+        {
+          "title": "20+ Years of Experience",
+          "description": "Two decades of professional service and a deep understanding of Pakistan's industrial, power, and healthcare sectors."
+        },
+        {
+          "title": "End-to-End Support",
+          "description": "From procurement to installation and after-sales service — we are with you across the full lifecycle."
+        }
+      ]
+    },
+    "certificates": [
+      {
+        "id": "c1779040940920uz62",
+        "image": "/img/uploads/1779040940908-image_045_800x600.jpg",
+        "title": "",
+        "subtitle": "",
+        "year": ""
+      },
+      {
+        "id": "c1779040950279tupw",
+        "image": "/img/uploads/1779040950273-image_044_800x600.jpg",
+        "title": "",
+        "subtitle": "",
+        "year": ""
+      },
+      {
+        "id": "c177904095786998ph",
+        "image": "/img/uploads/1779040957866-d_800x600.jpg",
+        "title": "",
+        "subtitle": "",
+        "year": ""
+      },
+      {
+        "id": "c1779040965851dca7",
+        "image": "/img/uploads/1779040965849-image_046_800x600.jpg",
+        "title": "",
+        "subtitle": "",
+        "year": ""
+      },
+      {
+        "id": "c1779040973258rf1a",
+        "image": "/img/uploads/1779040973256-image_047_800x600.jpg",
+        "title": "",
+        "subtitle": "",
+        "year": ""
+      },
+      {
+        "id": "c17790409802701400",
+        "image": "/img/uploads/1779040980268-image_048_800x600.jpg",
+        "title": "",
+        "subtitle": "",
+        "year": ""
+      },
+      {
+        "id": "c17790409886050zak",
+        "image": "/img/uploads/1779040988601-image_049_800x600.jpg",
+        "title": "",
+        "subtitle": "",
+        "year": ""
+      }
+    ],
+    "cta": {
+      "title": "Ready to power your next project?",
+      "description": "Talk to our team about industrial, power, or medical equipment requirements — we will respond within one business day.",
+      "primary_text": "Contact Us",
+      "primary_href": "/contact",
+      "secondary_text": "Our Customers",
+      "secondary_href": "/customer"
+    }
+  },
+  "products": [],
+  "footer": {
+    "description": "Leading Industrial & Power / Medical Solution Provider in Pakistan, trusted for over 20 years.",
+    "address": "Pakistan",
+    "copyright": "Ozawa Traders Pvt Ltd. All rights reserved.",
+    "credit_link": "https://www.ozawatraders.org",
+    "credit_name": "Ozawa Traders Pvt Ltd",
+    "columns": [
+      {
+        "links": [
+          {
+            "label": "Home",
+            "href": "/"
+          },
+          {
+            "label": "Customers",
+            "href": "/customer"
+          },
+          {
+            "label": "Contact Us",
+            "href": "/contact"
+          }
+        ],
+        "title": "Company"
+      },
+      {
+        "links": [
+          {
+            "label": "Power Cabinet",
+            "href": "/power-cabinet"
+          },
+          {
+            "label": "Matismart Breaker",
+            "href": "/matismart-breaker"
+          },
+          {
+            "label": "Earth Resistance Tester",
+            "href": "/earth-resistance-tester"
+          },
+          {
+            "label": "Micro Feeder",
+            "href": "/micro-feeder"
+          },
+          {
+            "label": "Dilution Tank",
+            "href": "/dilution-tank"
+          },
+          {
+            "label": "Radiology",
+            "href": "/rad"
+          },
+          {
+            "label": "Cardiology",
+            "href": "/card"
+          },
+          {
+            "label": "Physiotherapy",
+            "href": "/physio"
+          },
+          {
+            "label": "Ambulances",
+            "href": "/ambu"
+          }
+        ],
+        "title": "Solutions"
+      }
+    ]
+  },
+  "customers": {
+    "hero_title": "Our Customers",
+    "hero_subtitle": "Trusted by leading organizations",
+    "logos": [
+      "/img/ak.png",
+      "/img/sgc.png",
+      "/img/bith.png",
+      "/img/singh.png",
+      "/img/gold.png",
+      "/img/bitn.png",
+      "/img/ddk.png",
+      "/img/ete.png",
+      "/img/mav.png",
+      "/img/ban.png",
+      "/img/ren.png"
+    ],
+    "lists": [
+      {
+        "title": "All Government Teaching & THQ/DHQ Hospital",
+        "items": [
+          "Govt Teaching Hospital Shahdara Lahore",
+          "Govt Aziz Bhatti Shaheed Hospital Gujrat",
+          "Nishter Medical College & Hospital Multan",
+          "Jinnah Hospital Burn Center & Allama Iqbal Medical College",
+          "Government Lady Atchison Hospital, Lahore",
+          "Jinnah Hospital & Allama Iqbal Medical College",
+          "Sahiwal Medical College, DHQ Hospital Sahiwal",
+          "Govt. Civil Hospital, Kotla Arab Ali Khan District Gujrat",
+          "Govt. Rural Health Center, Dullanwala District Gujrat",
+          "Executive District Officer (Health), (Trauma Center) Chakwal",
+          "Government Said Mitha Hospital Lahore",
+          "Executive District Officer (Health), Nankana Sahib",
+          "Govt. Ganga Ram Hospital Lahore",
+          "Govt. THQ Hospital Muredkey, District Sheikhupura",
+          "Govt. THQ Hospital Sharakpur, District Sheikhupura",
+          "Govt. THQ Hospital Shah Kot, District Nankana Sahib",
+          "Govt. THQ Hospital Shanglah, District Nankana Sahib"
+        ],
+        "subtitle": "Medical"
+      },
+      {
+        "title": "Dilution Tank Customers",
+        "items": [
+          "GOURMET OIL AND GHEE MILLS GUJRANWALA PUNJAB",
+          "BLESSING EDIBLE OIL INDUSTRIES PVT LTD.",
+          "IFFCO PAKISTAN PVT LIMITED PORT QASIM",
+          "MARDAN OIL INDUSTRY PVT LIMITED",
+          "QADIR GHEE INDUSTRIES MULTAN",
+          "MAVRA GHEE MILLS PUNJAB",
+          "MOMIN GHEE MILLS PUNJAB",
+          "MM OIL AND GHEE INDUSTRY PVT LIMITED SINDH",
+          "CHAHAT FOOD INDUSTRIES BURE WALA PUNJAB",
+          "KAUSAR OIL AND GHEE INDUSTRY PVT LIMITED SINDH",
+          "A & S OIL INDUSTRIES PVT LTD. DISTRICT KORANGI KARACHI",
+          "AHAMND OIL INDUSTRIES PVT LIMETED DISTRICT KEMARI KARACHI",
+          "HAFEEZ IQBAL OIL AND GHEE MILL (PVT) LTD KPK",
+          "FATIMA OIL AND GHEE MILL (PVT) LTD KPK"
+        ],
+        "subtitle": "Dilution Tank"
+      }
+    ]
+  },
+  "contact": {
+    "hero_title": "Contact Us",
+    "hero_subtitle": "Get in touch with our team",
+    "address": "Office# 56 A1 Commercial Area, Township, Lahore-Pakistan",
+    "phone": "+92 3054767799",
+    "email": "ozawatraders786@gmail.com",
+    "hours": "Mon - Fri: 9:00 AM - 5:00 PM (Sat- Sun Off)",
+    "map_address": "56, A1 Commercial Area, Township, Lahore-Pakistan",
+    "map_embed_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3403.419318737997!2d74.31824232540325!3d31.457649474242757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391906b0f774c543%3A0x701ae66f36a59722!2sOzawa%20Traders!5e0!3m2!1sen!2s!4v1778070946675!5m2!1sen!2s"
+  },
+  "categories": {
+    "rad": {
+      "title": "Radiology Equipment",
+      "description": "Comprehensive radiology solutions for hospitals and diagnostic centers across Pakistan.",
+      "gallery": [
+        "/img/radiology/rad1.jpg",
+        "/img/radiology/rad2.jpg",
+        "/img/radiology/rad3.jpg",
+        "/img/radiology/rad4.jpg",
+        "/img/radiology/rad5.jpg",
+        "/img/radiology/rad6.jpg"
+      ]
+    },
+    "card": {
+      "title": "Cardiology Equipment",
+      "description": "ECG machines, ETT systems, and Holter monitors trusted by cardiology departments.",
+      "gallery": [
+        "/img/cardiology/card1.jpg",
+        "/img/cardiology/card2.jpg",
+        "/img/cardiology/card3.jpg",
+        "/img/cardiology/card4.jpg"
+      ]
+    },
+    "physio": {
+      "title": "Physiotherapy Equipment",
+      "description": "Laser therapy, magnetic therapy, shockwave therapy — full rehabilitation range.",
+      "gallery": [
+        "/img/physiotherapy/physio1.jpg",
+        "/img/physiotherapy/physio2.jpg",
+        "/img/physiotherapy/physio3.jpg",
+        "/img/physiotherapy/physio4.jpg"
+      ]
+    },
+    "ambu": {
+      "title": "Ambulances & Mobile Health Units",
+      "description": "Fully equipped ambulances ready for emergency response and patient transport.",
+      "gallery": [
+        "/img/ambulance/ambu1.jpg",
+        "/img/ambulance/ambu2.jpg",
+        "/img/ambulance/ambu3.jpg",
+        "/img/ambulance/ambu4.jpg",
+        "/img/ambulance/ambu5.jpg",
+        "/img/ambulance/ambu6.jpg",
+        "/img/ambulance/ambu7.jpg",
+        "/img/ambulance/ambu8.jpg",
+        "/img/uploads/1778102828195-image_013.jpg",
+        "/img/uploads/1778102863049-image_014.jpg",
+        "/img/uploads/1778102883265-image_021.jpg",
+        "/img/uploads/1778102915840-image_036.jpg",
+        "/img/uploads/1778102934860-image_018.jpg",
+        "/img/uploads/1778102952952-image_026.jpg",
+        "/img/uploads/1778102968304-image_027.jpg",
+        "/img/uploads/1778102982524-image_028.jpg",
+        "/img/uploads/1778103003320-image_029.jpg",
+        "/img/uploads/1778103028094-image_033.jpg",
+        "/img/uploads/1778103053911-image_041.jpg",
+        "/img/uploads/1778103071430-image_042.jpg",
+        "/img/uploads/1778103116542-image_043.jpg"
+      ]
+    },
+    "power-cabinet": {
+      "gallery": [
+        "/img/uploads/1779042570917-04.jpg"
+      ],
+      "description": "Industrial power distribution cabinets, switchgear enclosures and control panels — engineered for reliability in utility, commercial and industrial installations.",
+      "products": [
+        {
+          "id": "p1778519491556",
+          "title": "powewr cabinet",
+          "tagline": "",
+          "image": "/img/uploads/1778519490802-ppower1.jpeg",
+          "summary": "",
+          "highlights": []
+        },
+        {
+          "id": "p1778519594222",
+          "title": "p2",
+          "tagline": "",
+          "image": "/img/uploads/1778519593782-03.jpeg",
+          "summary": "",
+          "highlights": []
+        },
+        {
+          "id": "p1778519622230",
+          "title": "p3",
+          "tagline": "",
+          "image": "/img/uploads/1778519622033-04.jpeg",
+          "summary": "",
+          "highlights": []
+        },
+        {
+          "id": "p1778519647103",
+          "title": "p4",
+          "tagline": "",
+          "image": "/img/uploads/1778519647010-05.jpeg",
+          "summary": "",
+          "highlights": []
+        },
+        {
+          "id": "p1778519669786",
+          "title": "p5",
+          "tagline": "",
+          "image": "/img/uploads/1778519669757-06.jpeg",
+          "summary": "",
+          "highlights": []
+        },
+        {
+          "id": "p1778519686233",
+          "title": "p6",
+          "tagline": "",
+          "image": "/img/uploads/1778519686183-ppower1.jpeg",
+          "summary": "",
+          "highlights": []
+        }
+      ],
+      "title": "Power Cabinet",
+      "display_mode": "slider"
+    },
+    "matismart-breaker": {
+      "title": "Matismart Breaker",
+      "description": "Ozawa Traders supplies Matismart smart MCCB breakers — MT88R Smart Reclosing MCCB and MT88M Smart Metering MCCB. IEC 60947-2:2024 compliant intelligent circuit breakers with auto-reclose, residual current protection, real-time metering and RS-485 / 4G / WiFi networking.",
+      "gallery": [],
+      "products": [
+        {
+          "id": "mt88r",
+          "title": "MT88R — Smart Reclosing MCCB",
+          "tagline": "Smart Circuit Breaker",
+          "image": "/img/uploads/1778509213647-MT88M_image.jpg",
+          "summary": "Intelligent circuit breaker with auto-reclose and residual current protection.",
+          "highlights": []
+        },
+        {
+          "id": "mt88m",
+          "title": "RS486",
+          "tagline": "Smart Metering Breaker",
+          "image": "/img/uploads/1778509247741-MT88R_RS485_cloud_v2.jpg",
+          "summary": "Real-time digital monitoring of 3-phase voltage, load current and residual current with RS-485 / 4G / WiFi networking.",
+          "highlights": []
+        }
+      ]
+    },
+    "earth-resistance-tester": {
+      "title": "Earth Resistance Tester",
+      "description": "Professional earth resistance testers and electrical measurement instruments for utilities, industry and field engineers — Duoyi Tool authorized Pakistan distributor.",
+      "gallery": [],
+      "products": [
+        {
+          "id": "duoyi-tester",
+          "title": "Earth Resistance Tester",
+          "tagline": "Duoyi Tool — Pakistan Distributor",
+          "image": "/img/uploads/1778512912776-Duoyi_Earth_Resistance_Tester.jpg",
+          "summary": "Full Duoyi Tool product line — insulation testers, earth resistance testers, multimeters and other professional electrical test instruments.",
+          "highlights": []
+        }
+      ]
+    },
+    "micro-feeder": {
+      "title": "Micro Feeder",
+      "description": "In-house manufactured Micro Feeder units — locally engineered, built and tested for the demanding requirements of utilities and industrial customers in Pakistan.",
+      "gallery": [
+        "/img/uploads/1779042549592-jjj.jpg"
+      ],
+      "products": [
+        {
+          "id": "micro-feeder",
+          "title": "Micro Feeder",
+          "tagline": "Manufactured in Pakistan",
+          "image": "/img/uploads/1778102677576-image_007.jpg",
+          "summary": "Locally engineered micro feeder units, built and tested in-house.",
+          "highlights": []
+        },
+        {
+          "id": "p1778513114094",
+          "title": "Tank",
+          "tagline": "",
+          "image": "/img/uploads/1778513114086-image_004.jpg",
+          "summary": "",
+          "highlights": []
+        }
+      ],
+      "display_mode": "slider"
+    },
+    "dilution-tank": {
+      "title": "Dilution Tank",
+      "description": "In-house manufactured Dilution Tanks — locally engineered for industrial and utility applications across Pakistan.",
+      "gallery": [
+        "/img/uploads/1778535147466-01.jpeg"
+      ],
+      "products": [
+        {
+          "id": "dilution-tank",
+          "title": "Dilution Tank",
+          "tagline": "Manufactured in Pakistan",
+          "image": "/img/uploads/1778102513413-image_002.jpg",
+          "summary": "Dilution tanks manufactured in-house for industrial and utility applications.",
+          "highlights": []
+        },
+        {
+          "id": "p1778518583306",
+          "title": "dilution tank",
+          "tagline": "",
+          "image": "/img/uploads/1778518583009-01.jpeg",
+          "summary": "",
+          "highlights": []
+        },
+        {
+          "id": "p1778518604881",
+          "title": "dilution tank 1",
+          "tagline": "",
+          "image": "/img/uploads/1778518604856-02.jpeg",
+          "summary": "",
+          "highlights": []
+        },
+        {
+          "id": "p1778518635863",
+          "title": "dilution tank 2",
+          "tagline": "",
+          "image": "/img/uploads/1778518635749-03.jpeg",
+          "summary": "",
+          "highlights": []
+        }
+      ],
+      "display_mode": "slider"
+    }
+  }
+}

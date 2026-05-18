@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = 'Products'; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10">
+        <%- include('_flash') %>
+
+        <div class="flex items-center justify-between mb-8 gap-4 flex-wrap">
+            <div>
+                <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1">Products</h1>
+                <p class="text-navy-600">Add, edit, or remove product cards on the home page.</p>
+            </div>
+            <button type="button" onclick="document.getElementById('addProduct').showModal()" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                Add Product
+            </button>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-5">
+            <% content.products.forEach(p => { %>
+            <div class="card p-5">
+                <form method="POST" action="/admin/products/<%= p.id %>/edit" enctype="multipart/form-data" class="space-y-3" id="form-<%= p.id %>">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            <img src="<%= p.icon %>" class="w-16 h-16 rounded-lg object-contain border border-navy-100 bg-white p-2">
+                            <input type="file" name="icon" accept="image/*" class="text-xs mt-2 max-w-[140px]">
+                        </div>
+                        <div class="flex-1 space-y-2">
+                            <input type="text" name="title" value="<%= p.title %>" class="form-input" placeholder="Title">
+                            <input type="text" name="href" value="<%= p.href %>" class="form-input text-sm" placeholder="Link (e.g. /rad)">
+                        </div>
+                    </div>
+                    <textarea name="description" rows="3" class="form-input text-sm"><%= p.description %></textarea>
+                </form>
+                <div class="flex items-center justify-between pt-3 mt-3 border-t border-navy-100">
+                    <span class="text-xs text-navy-500 font-mono">id: <%= p.id %></span>
+                    <div class="flex gap-2">
+                        <button type="submit" form="form-<%= p.id %>" class="btn-primary !py-2 !px-4 !text-sm">Save</button>
+                        <form method="POST" action="/admin/products/<%= p.id %>/delete" onsubmit="return confirm('Delete product &quot;<%= p.title %>&quot;?')">
+                            <button type="submit" class="btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+
+        <% if (!content.products.length) { %>
+        <div class="card p-10 text-center text-navy-500">No products yet. Click "Add Product" to create one.</div>
+        <% } %>
+
+        <dialog id="addProduct" class="rounded-2xl p-0 backdrop:bg-navy-950/50 w-full max-w-lg">
+            <form method="POST" action="/admin/products/add" enctype="multipart/form-data" class="bg-white p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-display text-xl font-bold">Add New Product</h2>
+                    <button type="button" onclick="document.getElementById('addProduct').close()" class="text-navy-400 hover:text-navy-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div><label class="form-label">ID (lowercase, no spaces)</label><input type="text" name="id" required pattern="[a-z0-9\-]+" placeholder="e.g. dental" class="form-input"></div>
+                <div><label class="form-label">Title</label><input type="text" name="title" required class="form-input"></div>
+                <div><label class="form-label">Description</label><textarea name="description" rows="3" required class="form-input"></textarea></div>
+                <div><label class="form-label">Link (URL or anchor)</label><input type="text" name="href" value="#" class="form-input"></div>
+                <div><label class="form-label">Icon Image</label><input type="file" name="icon" accept="image/*" required class="text-sm"></div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('addProduct').close()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Product</button>
+                </div>
+            </form>
+        </dialog>
+    </main>
+</body>
+</html>

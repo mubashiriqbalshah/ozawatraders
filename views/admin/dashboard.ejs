@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = 'Dashboard'; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10">
+        <%- include('_flash') %>
+
+        <div class="mb-8">
+            <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1">Welcome back, <%= currentUser.username %></h1>
+            <p class="text-navy-600">Manage every section of your website from here.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <% const cards = [
+                { href: '/admin/home', title: 'Home Page', desc: 'Edit hero, about, stats, why-us, CTA & footer.', color: 'bg-blue-500' },
+                { href: '/admin/products', title: 'Products', desc: 'Add, edit, reorder or remove product cards.', color: 'bg-indigo-500' },
+                { href: '/admin/certificates', title: 'Certificates', desc: 'Upload, edit or remove certificates shown on homepage carousel.', color: 'bg-green-500' },
+                { href: '/admin/customers', title: 'Customers', desc: 'Manage customer logos and section text.', color: 'bg-teal-500' },
+                { href: '/admin/messages', title: 'Messages' + (typeof unreadMessages !== 'undefined' && unreadMessages > 0 ? ' (' + unreadMessages + ' new)' : ''), desc: 'Read and manage contact form submissions.', color: 'bg-fuchsia-500' },
+                { href: '/admin/category/rad', title: 'Radiology', desc: 'Edit page text and image gallery.', color: 'bg-rose-500' },
+                { href: '/admin/category/card', title: 'Cardiology', desc: 'Edit page text and image gallery.', color: 'bg-pink-500' },
+                { href: '/admin/category/physio', title: 'Physiotherapy', desc: 'Edit page text and image gallery.', color: 'bg-amber-500' },
+                { href: '/admin/category/ambu', title: 'Ambulances', desc: 'Edit page text and image gallery.', color: 'bg-orange-500' },
+                { href: '/admin/category/power-cabinet', title: 'Power Cabinet', desc: 'Industrial power distribution cabinets — text, products, gallery.', color: 'bg-blue-600' },
+                { href: '/admin/category/matismart-breaker', title: 'Matismart Breaker', desc: 'MT88R / MT88M smart MCCB — text, products, gallery.', color: 'bg-yellow-500' },
+                { href: '/admin/category/earth-resistance-tester', title: 'Earth Resistance Tester', desc: 'Duoyi Tool — text, products, gallery.', color: 'bg-violet-500' },
+                { href: '/admin/category/micro-feeder', title: 'Micro Feeder', desc: 'Micro Feeder — text, products, gallery.', color: 'bg-lime-500' },
+                { href: '/admin/category/dilution-tank', title: 'Dilution Tank', desc: 'Dilution Tank — text, products, gallery.', color: 'bg-sky-500' },
+                { href: '/admin/contact', title: 'Contact Info', desc: 'Address, phone, email, business hours.', color: 'bg-emerald-500' },
+                { href: '/admin/site', title: 'Site / Footer / Maintenance', desc: 'Site name, browser tab title, footer, maintenance toggle.', color: 'bg-purple-600' },
+                { href: '/admin/settings', title: 'Account / Logo', desc: 'Change password, replace site logo.', color: 'bg-navy-700' }
+            ]; %>
+            <% cards.forEach(c => { %>
+            <a href="<%= c.href %>" class="group card p-6 hover:shadow-lg hover:-translate-y-0.5 transition">
+                <div class="<%= c.color %> w-10 h-10 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                </div>
+                <h3 class="font-display font-bold text-navy-900 mb-1 group-hover:text-brand transition"><%= c.title %></h3>
+                <p class="text-sm text-navy-600"><%= c.desc %></p>
+            </a>
+            <% }) %>
+        </div>
+    </main>
+</body>
+</html>

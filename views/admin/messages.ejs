@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% const pageTitle = 'Messages'; %>
+    <%- include('_head', { pageTitle }) %>
+</head>
+<body class="bg-navy-50/30 text-navy-900 min-h-screen">
+    <%- include('_sidebar') %>
+    <%- include('_topbar') %>
+    <main class="lg:ml-64 px-6 lg:px-10 py-8 lg:py-10 max-w-6xl">
+        <%- include('_flash') %>
+
+        <div class="flex items-center justify-between mb-8 gap-4 flex-wrap">
+            <div>
+                <h1 class="font-display text-3xl font-extrabold text-navy-900 mb-1">Contact Messages</h1>
+                <p class="text-navy-600">
+                    <%= messages.length %> total
+                    <% const unread = messages.filter(m => !m.read).length; %>
+                    <% if (unread > 0) { %>
+                    &middot; <span class="text-brand font-semibold"><%= unread %> unread</span>
+                    <% } %>
+                </p>
+            </div>
+        </div>
+
+        <% if (!messages.length) { %>
+        <div class="card p-10 text-center text-navy-500">
+            <svg class="w-12 h-12 mx-auto text-navy-300 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            No messages yet. Submissions from the public contact form will appear here.
+        </div>
+        <% } else { %>
+        <div class="space-y-4">
+            <% messages.forEach(m => { %>
+            <div class="card p-6 <%= !m.read ? 'border-brand/40 ring-1 ring-brand/20' : '' %>">
+                <div class="flex items-start justify-between gap-4 flex-wrap mb-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 class="font-display font-bold text-navy-900 text-lg"><%= m.name %></h3>
+                            <% if (!m.read) { %>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand text-white text-[10px] font-bold uppercase tracking-wider">New</span>
+                            <% } %>
+                        </div>
+                        <div class="text-sm text-navy-600 flex flex-wrap gap-x-4 gap-y-1">
+                            <a href="mailto:<%= m.email %>" class="hover:text-brand">
+                                <svg class="w-4 h-4 inline -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                <%= m.email %>
+                            </a>
+                            <% if (m.phone) { %>
+                            <a href="tel:<%= m.phone %>" class="hover:text-brand">
+                                <svg class="w-4 h-4 inline -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h2.5a1 1 0 01.95.68l1.5 4.5a1 1 0 01-.5 1.21l-1.7.85a11 11 0 005.5 5.5l.85-1.7a1 1 0 011.21-.5l4.5 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.4 21 3 14.6 3 6V5z"/></svg>
+                                <%= m.phone %>
+                            </a>
+                            <% } %>
+                            <span class="text-navy-500">
+                                <%= new Date(m.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <form method="POST" action="/admin/messages/<%= m.id %>/read">
+                            <button type="submit" class="px-3 py-1.5 rounded-lg border border-navy-200 hover:bg-navy-50 text-sm font-medium text-navy-700">
+                                Mark as <%= m.read ? 'unread' : 'read' %>
+                            </button>
+                        </form>
+                        <form method="POST" action="/admin/messages/<%= m.id %>/delete" onsubmit="return confirm('Delete this message?')">
+                            <button type="submit" class="btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+
+                <% if (m.subject) { %>
+                <div class="mb-3">
+                    <span class="text-xs uppercase tracking-wider text-navy-500 font-semibold">Subject</span>
+                    <p class="font-semibold text-navy-800"><%= m.subject %></p>
+                </div>
+                <% } %>
+
+                <div class="bg-navy-50 rounded-lg p-4 border border-navy-100">
+                    <span class="text-xs uppercase tracking-wider text-navy-500 font-semibold block mb-1">Message</span>
+                    <p class="text-navy-700 whitespace-pre-wrap leading-relaxed"><%= m.message %></p>
+                </div>
+
+                <details class="mt-3">
+                    <summary class="text-xs text-navy-400 cursor-pointer hover:text-navy-600">Technical details</summary>
+                    <div class="mt-2 text-xs text-navy-500 font-mono space-y-0.5">
+                        <div>IP: <%= m.ip || 'unknown' %></div>
+                        <div>UA: <%= m.userAgent || 'unknown' %></div>
+                    </div>
+                </details>
+            </div>
+            <% }) %>
+        </div>
+        <% } %>
+    </main>
+</body>
+</html>
