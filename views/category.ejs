@@ -4,7 +4,7 @@
     <% const cat = content.categories[categoryKey]; const pageTitle = cat.title + ' — ' + content.site.name; %>
     <%- include('partials/head', { pageTitle }) %>
 </head>
-<body class="text-navy-900 antialiased">
+<body class="text-navy-900 antialiased page-navy">
     <%- include('partials/header') %>
 
     <% const _isSliderMode = cat.display_mode === 'slider'; %>
@@ -30,10 +30,10 @@
         <div class="hero-grid absolute inset-0"></div>
         <div class="relative max-w-4xl mx-auto px-6 flex justify-center">
             <% if (cat.gallery && cat.gallery.length) { %>
-            <div id="catSlider" class="relative w-full max-w-4xl aspect-[16/9] overflow-hidden rounded-2xl shadow-2xl bg-navy-900 lightbox-gallery">
+            <div id="catSlider" class="relative w-full max-w-4xl aspect-[16/9] overflow-hidden rounded-2xl bg-navy-900 lightbox-gallery border border-brand/50 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7),0_0_50px_-12px_rgba(4,166,225,0.55)]">
                 <% cat.gallery.forEach((src, i) => { %>
-                <div class="cat-slide absolute inset-0 flex items-center justify-center p-2 transition-opacity duration-700 <%= i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' %>" data-idx="<%= i %>">
-                    <img src="<%= src %>" alt="" class="max-w-full max-h-full w-auto h-auto object-contain">
+                <div class="cat-slide absolute inset-0 flex items-center justify-center transition-opacity duration-700 <%= i === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0' %>" data-idx="<%= i %>">
+                    <img src="<%= src %>" alt="" class="w-full h-full object-contain">
                 </div>
                 <% }) %>
 
@@ -52,7 +52,7 @@
                 <% } %>
             </div>
             <% } else { %>
-            <div class="w-full max-w-4xl aspect-[16/9] rounded-2xl border-2 border-dashed border-white/20 bg-navy-900/50 flex flex-col items-center justify-center text-center px-6">
+            <div class="w-full max-w-4xl aspect-[16/9] rounded-2xl border-2 border-dashed border-white/30 bg-navy-900/50 flex flex-col items-center justify-center text-center px-6 ring-1 ring-brand/20">
                 <svg class="w-16 h-16 text-blue-400 mb-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 <p class="text-white font-display font-bold text-lg">No images yet</p>
                 <p class="text-navy-300 text-sm mt-2">Upload images from admin panel to populate the slider.</p>
@@ -119,7 +119,7 @@
                 <% cat.products.forEach(p => { %>
                 <article class="rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition bg-white border border-navy-100 flex flex-col">
                     <div class="bg-white overflow-hidden flex items-center justify-center p-4 border-b border-navy-100 h-[360px]">
-                        <img src="<%= p.image %>" alt="<%= p.title %>" class="max-w-full max-h-full w-auto h-auto object-contain" onerror="this.style.opacity='0.2';this.alt='Image coming soon';">
+                        <img src="<%= p.image %>" alt="<%= p.title %>" class="w-full h-full object-contain" onerror="this.style.opacity='0.2';this.alt='Image coming soon';">
                     </div>
                     <div class="p-6 flex-1 flex flex-col">
                         <% if (p.tagline) { %>
