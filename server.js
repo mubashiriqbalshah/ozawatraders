@@ -120,16 +120,25 @@ async function blobHas(key) {
     } catch { return false; }
 }
 
+// Vercel Blob's public CDN is read-after-write *eventually* consistent (a write
+// takes a few seconds to propagate). To bridge that gap, the instance that writes
+// keeps the just-written value in memory and serves it for a short window, so an
+// admin always sees their own edit immediately. Blob remains the durable backing.
+const _mem = {};
+const MEM_TTL = 30000;
+
 async function readJson(key, fallbackFile) {
     if (BLOB_ENABLED) {
+        const m = _mem[key];
+        if (m && Date.now() < m.until) { try { return JSON.parse(m.body); } catch {} }
         try {
             const url = await blobUrl(key);
             if (!url) return null;
-            // Unique per-read query so the CDN never serves a stale copy of mutable JSON.
             const bust = '__b=' + Date.now() + '-' + Math.floor(Math.random() * 1e9);
             const res = await fetch(url + (url.includes('?') ? '&' : '?') + bust, { cache: 'no-store' });
             if (!res.ok) return null;
-            return await res.json();
+            const text = await res.text();
+            return JSON.parse(text);
         } catch (e) { console.error('[blob read]', key, e.message); return null; }
     }
     try { return JSON.parse(fs.readFileSync(fallbackFile, 'utf8')); } catch { return null; }
@@ -138,6 +147,7 @@ async function readJson(key, fallbackFile) {
 async function writeJson(key, fallbackFile, data) {
     const body = JSON.stringify(data, null, 2);
     if (BLOB_ENABLED) {
+        _mem[key] = { body, until: Date.now() + MEM_TTL };
         const { put } = blob();
         await put(key, body, {
             access: 'public', token: BLOB_TOKEN, contentType: 'application/json',
