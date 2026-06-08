@@ -70,7 +70,7 @@ const pages = [
     const fontBold = await merged.embedFont(StandardFonts.HelveticaBold);
     const font = await merged.embedFont(StandardFonts.Helvetica);
     coverPage.drawText('Ozawa Traders', { x: 50, y: 700, size: 36, font: fontBold, color: rgb(0.12, 0.23, 0.54) });
-    coverPage.drawText('Industrial, Power & Medical Solutions', { x: 50, y: 660, size: 16, font: font, color: rgb(0.18, 0.31, 0.4) });
+    coverPage.drawText('IT, Industrial, Power & Medical Solutions', { x: 50, y: 660, size: 16, font: font, color: rgb(0.18, 0.31, 0.4) });
     coverPage.drawRectangle({ x: 50, y: 640, width: 100, height: 3, color: rgb(0.85, 0.58, 0.09) });
     coverPage.drawText('Full-Stack Web Development Portfolio', { x: 50, y: 590, size: 18, font: fontBold, color: rgb(0.05, 0.1, 0.2) });
     const meta = [

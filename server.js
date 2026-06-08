@@ -23,12 +23,59 @@ if (IS_PROD && !process.env.SESSION_SECRET) {
 
 app.set('trust proxy', 1);
 const ROOT = __dirname;
-const DATA_FILE = path.join(ROOT, 'data', 'content.json');
-const AUTH_FILE = path.join(ROOT, 'data', 'auth.json');
-const MSG_FILE = path.join(ROOT, 'data', 'messages.json');
-const UPLOAD_DIR = path.join(ROOT, 'img', 'uploads');
+// Writable data lives under PERSIST_DIR so it survives redeploys on hosts with an
+// ephemeral filesystem (Railway/Render). Mount a volume and set PERSIST_DIR to it.
+// Defaults to the repo dir for local development (unchanged behaviour).
+const PERSIST_DIR = process.env.PERSIST_DIR || ROOT;
+const DATA_DIR = path.join(PERSIST_DIR, 'data');
+const DATA_FILE = path.join(DATA_DIR, 'content.json');
+const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
+const MSG_FILE = path.join(DATA_DIR, 'messages.json');
+const UPLOAD_DIR = path.join(PERSIST_DIR, 'img', 'uploads');
+const ENV_FILE = path.join(PERSIST_DIR, '.env');
 
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Bundled copies shipped in the git repo, used to seed the persistent dir once.
+const BUNDLED_DATA_DIR = path.join(ROOT, 'data');
+const BUNDLED_UPLOAD_DIR = path.join(ROOT, 'img', 'uploads');
+
+seedPersistentData();
+
+// On first boot against an empty volume, copy the committed content/images across
+// and create an admin login. No-op when PERSIST_DIR is the repo (local dev).
+function seedPersistentData() {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+    const bundledContent = path.join(BUNDLED_DATA_DIR, 'content.json');
+    if (!fs.existsSync(DATA_FILE) && fs.existsSync(bundledContent) && bundledContent !== DATA_FILE) {
+        fs.copyFileSync(bundledContent, DATA_FILE);
+        console.log('[seed] content.json copied to volume');
+    }
+
+    if (!fs.existsSync(AUTH_FILE)) {
+        const bundledAuth = path.join(BUNDLED_DATA_DIR, 'auth.json');
+        if (fs.existsSync(bundledAuth) && bundledAuth !== AUTH_FILE) {
+            fs.copyFileSync(bundledAuth, AUTH_FILE);
+        } else {
+            const username = process.env.ADMIN_USERNAME || 'admin';
+            const password = process.env.ADMIN_PASSWORD || 'changeme-now';
+            fs.writeFileSync(AUTH_FILE, JSON.stringify({
+                username,
+                passwordHash: bcrypt.hashSync(password, 10)
+            }, null, 2), 'utf8');
+            console.log(`[seed] auth.json created for admin "${username}" — change the password after first login`);
+        }
+    }
+
+    if (fs.existsSync(BUNDLED_UPLOAD_DIR) && BUNDLED_UPLOAD_DIR !== UPLOAD_DIR) {
+        for (const f of fs.readdirSync(BUNDLED_UPLOAD_DIR)) {
+            const dest = path.join(UPLOAD_DIR, f);
+            if (!fs.existsSync(dest)) {
+                try { fs.copyFileSync(path.join(BUNDLED_UPLOAD_DIR, f), dest); } catch {}
+            }
+        }
+    }
+}
 
 function readContent() {
     return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
@@ -64,7 +111,7 @@ function writeMessages(data) {
 function sendEmail({ subject, text, replyTo }) {
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
-    const to = process.env.EMAIL_TO || 'aminknd@gmail.com';
+    const to = process.env.EMAIL_TO || 'ozawatraders786@gmail.com';
     if (!user || !pass) {
         console.log('[Email] SMTP not configured (SMTP_USER/SMTP_PASS missing) — skipping');
         return;
@@ -131,6 +178,8 @@ if (helmet) {
 }
 
 const staticOpts = { maxAge: '7d', immutable: false, etag: true };
+// Uploaded images live on the persistent volume; mount it ahead of the bundled /img.
+app.use('/img/uploads', express.static(UPLOAD_DIR, staticOpts));
 app.use('/img', express.static(path.join(ROOT, 'img'), staticOpts));
 app.use('/css', express.static(path.join(ROOT, 'css'), staticOpts));
 app.use('/js', express.static(path.join(ROOT, 'js'), staticOpts));
@@ -141,7 +190,7 @@ app.get('/robots.txt', (_req, res) => res.type('text/plain').send(robotsTxt));
 
 app.get('/sitemap.xml', (_req, res) => {
     const base = 'https://ozawatraders.org';
-    const urls = ['/', '/customer', '/contact', '/power-cabinet', '/matismart-breaker', '/earth-resistance-tester', '/micro-feeder', '/dilution-tank', '/rad', '/card', '/physio', '/ambu'];
+    const urls = ['/', '/it', '/customer', '/contact', '/power-cabinet', '/matismart-breaker', '/earth-resistance-tester', '/micro-feeder', '/dilution-tank', '/rad', '/card', '/physio', '/ambu'];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
         urls.map(u => `  <url><loc>${base}${u}</loc><changefreq>monthly</changefreq></url>`).join('\n') +
         '\n</urlset>\n';
@@ -200,6 +249,7 @@ app.use((req, res, next) => {
 app.get('/', (_req, res) => res.render('index'));
 app.get('/whoweare', (_req, res) => res.redirect(301, '/'));
 app.get('/customer', (_req, res) => res.render('customer'));
+app.get('/it', (_req, res) => res.render('it'));
 app.get('/contact', (_req, res) => res.render('contact'));
 
 app.post('/contact', (req, res) => {
@@ -635,7 +685,7 @@ app.post('/admin/site/footer', requireAuth, (req, res) => {
 
 app.post('/admin/site/maintenance', requireAuth, (req, res) => {
     const target = req.body.value === 'true' ? 'true' : 'false';
-    const envPath = path.join(ROOT, '.env');
+    const envPath = ENV_FILE;
     let env = '';
     try { env = fs.readFileSync(envPath, 'utf8'); } catch {}
     if (/^MAINTENANCE=/m.test(env)) {
@@ -665,6 +715,66 @@ app.post('/admin/contact', requireAuth, (req, res) => {
     writeContent(data);
     flash(req, 'success', 'Contact info updated.');
     res.redirect('/admin/contact');
+});
+
+// ----- IT / Software section -----
+app.get('/admin/it', requireAuth, (_req, res) => res.render('admin/edit-it'));
+
+app.post('/admin/it', requireAuth, (req, res) => {
+    const data = readContent();
+    const b = req.body;
+    if (!data.it) data.it = {};
+    data.it.hero_badge = b.hero_badge || '';
+    data.it.hero_title = b.hero_title || '';
+    data.it.hero_subtitle = b.hero_subtitle || '';
+    data.it.intro_title = b.intro_title || '';
+    data.it.intro_paragraph = b.intro_paragraph || '';
+    data.it.services_subtitle = b.services_subtitle || '';
+    data.it.services_title = b.services_title || '';
+    data.it.services_description = b.services_description || '';
+
+    // Services: one per line as "Title | Description"
+    data.it.services = (b.services || '')
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+            const parts = line.split('|').map(p => p.trim());
+            return { title: parts[0] || '', description: parts[1] || '' };
+        })
+        .filter(s => s.title);
+
+    if (!data.it.tenders) data.it.tenders = {};
+    data.it.tenders.subtitle = b.tenders_subtitle || '';
+    data.it.tenders.title = b.tenders_title || '';
+    data.it.tenders.description = b.tenders_description || '';
+    data.it.tenders.cta_text = b.tenders_cta_text || '';
+    data.it.tenders.cta_href = b.tenders_cta_href || '';
+    data.it.tenders.points = (b.tenders_points || '')
+        .split(/\r?\n/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+    data.it.tenders.filter_hint = b.tenders_filter_hint || '';
+    data.it.tenders.listings_title = b.tenders_listings_title || '';
+    data.it.tenders.listings_note = b.tenders_listings_note || '';
+    data.it.tenders.live_text = b.tenders_live_text || '';
+    data.it.tenders.live_href = b.tenders_live_href || '';
+
+    // Tender listings: one per line as "Title | Department | Ref | Category | Date | URL"
+    data.it.tenders.listings = (b.tenders_listings || '')
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+            const p = line.split('|').map(x => x.trim());
+            return { title: p[0] || '', department: p[1] || '', ref: p[2] || '', category: p[3] || '', date: p[4] || '', url: p[5] || '' };
+        })
+        .filter(x => x.title);
+
+    writeContent(data);
+    flash(req, 'success', 'IT section updated.');
+    res.redirect('/admin/it');
 });
 
 // ----- Categories (rad/card/physio/ambu/power) -----

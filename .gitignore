@@ -6,7 +6,7 @@ data/content.json.tmp
 data/auth.json.tmp
 data/messages.json.tmp
 *.save
-img/uploads/
+img/uploads/*.tmp
 *.log
 .DS_Store
 Thumbs.db
