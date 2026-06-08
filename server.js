@@ -43,6 +43,7 @@ seedPersistentData();
 // On first boot against an empty volume, copy the committed content/images across
 // and create an admin login. No-op when PERSIST_DIR is the repo (local dev).
 function seedPersistentData() {
+  try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
@@ -75,6 +76,10 @@ function seedPersistentData() {
             }
         }
     }
+  } catch (e) {
+    // A read-only filesystem (e.g. misconfigured host) must not crash boot.
+    console.error('[seed] could not seed persistent data:', e.message);
+  }
 }
 
 function readContent() {
@@ -944,7 +949,12 @@ app.use((err, _req, res, _next) => {
     res.status(500).send('Server error: ' + err.message);
 });
 
-app.listen(PORT, () => {
-    console.log(`Ozawa Traders site running at http://localhost:${PORT}`);
-    console.log(`Admin panel: http://localhost:${PORT}/admin/login`);
-});
+// On Vercel the app runs as a serverless function — export it instead of listening.
+if (process.env.VERCEL) {
+    module.exports = app;
+} else {
+    app.listen(PORT, () => {
+        console.log(`Ozawa Traders site running at http://localhost:${PORT}`);
+        console.log(`Admin panel: http://localhost:${PORT}/admin/login`);
+    });
+}
