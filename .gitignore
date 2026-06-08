@@ -22,3 +22,5 @@ data.bak-*/
 views.bak-*/
 server.js.bak*
 portfolio-output/
+.vercel
+.env*.local

@@ -1,6 +1,6 @@
 try { require('dotenv').config(); } catch {}
 const express = require('express');
-const session = require('express-session');
+const session = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const fs = require('fs');
@@ -82,35 +82,114 @@ function seedPersistentData() {
   }
 }
 
-function readContent() {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+// ===== Storage layer =====
+// On Vercel (serverless, ephemeral FS) data + uploads live in Vercel Blob so admin
+// edits persist. Locally (no BLOB token) it falls back to the JSON files on disk.
+const BLOB_ENABLED = !!process.env.BLOB_READ_WRITE_TOKEN;
+const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
+const CONTENT_KEY = 'data/content.json';
+const AUTH_KEY = 'data/auth.json';
+const MSG_KEY = 'data/messages.json';
+
+let _blob = null;
+function blob() { if (!_blob) _blob = require('@vercel/blob'); return _blob; }
+const _urlCache = {};
+
+async function blobUrl(pathname) {
+    if (_urlCache[pathname]) return _urlCache[pathname];
+    const { list } = blob();
+    const { blobs } = await list({ prefix: pathname, limit: 100, token: BLOB_TOKEN });
+    const found = blobs.find(b => b.pathname === pathname);
+    if (found) _urlCache[pathname] = found.url;
+    return found ? found.url : null;
 }
 
-function writeContent(data) {
-    const tmp = DATA_FILE + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8');
-    fs.renameSync(tmp, DATA_FILE);
+async function readJson(key, fallbackFile) {
+    if (BLOB_ENABLED) {
+        try {
+            const url = await blobUrl(key);
+            if (!url) return null;
+            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + key.length, { cache: 'no-store' });
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (e) { console.error('[blob read]', key, e.message); return null; }
+    }
+    try { return JSON.parse(fs.readFileSync(fallbackFile, 'utf8')); } catch { return null; }
 }
 
-function readAuth() {
-    return JSON.parse(fs.readFileSync(AUTH_FILE, 'utf8'));
+async function writeJson(key, fallbackFile, data) {
+    const body = JSON.stringify(data, null, 2);
+    if (BLOB_ENABLED) {
+        const { put } = blob();
+        const r = await put(key, body, {
+            access: 'public', token: BLOB_TOKEN, contentType: 'application/json',
+            addRandomSuffix: false, allowOverwrite: true, cacheControlMaxAge: 0
+        });
+        _urlCache[key] = r.url;
+        return;
+    }
+    const tmp = fallbackFile + '.tmp';
+    fs.writeFileSync(tmp, body, 'utf8');
+    fs.renameSync(tmp, fallbackFile);
 }
 
-function writeAuth(data) {
-    const tmp = AUTH_FILE + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8');
-    fs.renameSync(tmp, AUTH_FILE);
+// Seed the Blob store once from the committed defaults if it's empty.
+let _seedPromise = null;
+function ensureSeeded() {
+    if (!BLOB_ENABLED) return Promise.resolve();
+    if (!_seedPromise) _seedPromise = (async () => {
+        try {
+            if (!(await blobUrl(CONTENT_KEY))) {
+                const def = JSON.parse(fs.readFileSync(path.join(BUNDLED_DATA_DIR, 'content.json'), 'utf8'));
+                await writeJson(CONTENT_KEY, null, def);
+            }
+            if (!(await blobUrl(AUTH_KEY))) {
+                const bundledAuth = path.join(BUNDLED_DATA_DIR, 'auth.json');
+                const auth = fs.existsSync(bundledAuth)
+                    ? JSON.parse(fs.readFileSync(bundledAuth, 'utf8'))
+                    : { username: process.env.ADMIN_USERNAME || 'admin', passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'changeme-now', 10) };
+                await writeJson(AUTH_KEY, null, auth);
+            }
+        } catch (e) { console.error('[blob seed]', e.message); }
+    })();
+    return _seedPromise;
 }
 
-function readMessages() {
-    if (!fs.existsSync(MSG_FILE)) return [];
-    try { return JSON.parse(fs.readFileSync(MSG_FILE, 'utf8')); } catch { return []; }
+async function getContent() {
+    await ensureSeeded();
+    const c = await readJson(CONTENT_KEY, DATA_FILE);
+    return c || JSON.parse(fs.readFileSync(path.join(BUNDLED_DATA_DIR, 'content.json'), 'utf8'));
 }
+async function saveContent(data) { return writeJson(CONTENT_KEY, DATA_FILE, data); }
 
-function writeMessages(data) {
-    const tmp = MSG_FILE + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8');
-    fs.renameSync(tmp, MSG_FILE);
+async function getAuth() {
+    await ensureSeeded();
+    const a = await readJson(AUTH_KEY, AUTH_FILE);
+    return a || { username: process.env.ADMIN_USERNAME || 'admin', passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'changeme-now', 10) };
+}
+async function saveAuth(data) { return writeJson(AUTH_KEY, AUTH_FILE, data); }
+
+async function getMessages() {
+    const m = await readJson(MSG_KEY, MSG_FILE);
+    return Array.isArray(m) ? m : [];
+}
+async function saveMessages(data) { return writeJson(MSG_KEY, MSG_FILE, data); }
+
+// Store an uploaded image (multer memory file) and return its public URL.
+async function storeUpload(file) {
+    if (!file) return null;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const safe = path.basename(file.originalname, ext).replace(/[^a-z0-9-_]/gi, '-').slice(0, 40) || 'upload';
+    const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safe}${ext}`;
+    if (BLOB_ENABLED) {
+        const { put } = blob();
+        const r = await put(`uploads/${name}`, file.buffer, {
+            access: 'public', token: BLOB_TOKEN, addRandomSuffix: false, contentType: file.mimetype
+        });
+        return r.url;
+    }
+    fs.writeFileSync(path.join(UPLOAD_DIR, name), file.buffer);
+    return '/img/uploads/' + name;
 }
 
 function sendEmail({ subject, text, replyTo }) {
@@ -154,16 +233,9 @@ function sendWhatsApp(messageText) {
     }).on('error', err => console.error('[WhatsApp] error:', err.message));
 }
 
-const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-    filename: (_req, file, cb) => {
-        const ext = path.extname(file.originalname).toLowerCase();
-        const safe = path.basename(file.originalname, ext).replace(/[^a-z0-9-_]/gi, '-').slice(0, 40);
-        cb(null, `${Date.now()}-${safe || 'upload'}${ext}`);
-    }
-});
+// Memory storage — files are forwarded to Blob (or written to disk locally) by storeUpload().
 const upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (_req, file, cb) => {
         const ok = /\.(jpe?g|png|gif|webp|svg)$/i.test(file.originalname);
@@ -193,7 +265,7 @@ app.use('/fonts', express.static(path.join(ROOT, 'fonts'), { maxAge: '30d', immu
 const robotsTxt = `User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: https://ozawatraders.org/sitemap.xml\n`;
 app.get('/robots.txt', (_req, res) => res.type('text/plain').send(robotsTxt));
 
-app.get('/sitemap.xml', (_req, res) => {
+app.get('/sitemap.xml', async (_req, res) => {
     const base = 'https://ozawatraders.org';
     const urls = ['/', '/it', '/customer', '/contact', '/power-cabinet', '/matismart-breaker', '/earth-resistance-tester', '/micro-feeder', '/dilution-tank', '/rad', '/card', '/physio', '/ambu'];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
@@ -202,7 +274,7 @@ app.get('/sitemap.xml', (_req, res) => {
     res.type('application/xml').send(xml);
 });
 
-app.get('/favicon.ico', (_req, res) => {
+app.get('/favicon.ico', async (_req, res) => {
     const logoPath = path.join(ROOT, 'img', 'logo.png');
     if (fs.existsSync(logoPath)) return res.sendFile(logoPath);
     res.status(204).end();
@@ -211,31 +283,31 @@ app.get('/favicon.ico', (_req, res) => {
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(express.json({ limit: '2mb' }));
 
+// Stateless signed-cookie sessions — work across serverless instances (no server store).
 app.use(session({
-    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: IS_PROD,
-        maxAge: 1000 * 60 * 60 * 8
-    }
+    name: 'ozawa_sess',
+    keys: [process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')],
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: IS_PROD,
+    maxAge: 1000 * 60 * 60 * 8
 }));
 
 app.use(injectUser);
-app.use((req, res, next) => {
-    res.locals.content = readContent();
-    res.locals.req = req;
-    res.locals.flash = req.session.flash || null;
-    if (req.session.flash) delete req.session.flash;
-    if (req.session.user) {
-        try { res.locals.unreadMessages = readMessages().filter(m => !m.read).length; }
-        catch { res.locals.unreadMessages = 0; }
-    } else {
-        res.locals.unreadMessages = 0;
-    }
-    next();
+app.use(async (req, res, next) => {
+    try {
+        req.content = res.locals.content = await getContent();
+        res.locals.req = req;
+        res.locals.flash = req.session.flash || null;
+        if (req.session.flash) delete req.session.flash;
+        if (req.session.user) {
+            try { res.locals.unreadMessages = (await getMessages()).filter(m => !m.read).length; }
+            catch { res.locals.unreadMessages = 0; }
+        } else {
+            res.locals.unreadMessages = 0;
+        }
+        next();
+    } catch (e) { next(e); }
 });
 
 function flash(req, type, msg) {
@@ -257,7 +329,7 @@ app.get('/customer', (_req, res) => res.render('customer'));
 app.get('/it', (_req, res) => res.render('it'));
 app.get('/contact', (_req, res) => res.render('contact'));
 
-app.post('/contact', (req, res) => {
+app.post('/contact', async (req, res) => {
     const b = req.body || {};
     if (b.website && b.website.trim()) return res.redirect('/contact?sent=1');
     const name = (b.name || '').trim();
@@ -268,7 +340,7 @@ app.post('/contact', (req, res) => {
     if (!name || name.length > 100 || !email || email.length > 150 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !message || message.length > 5000) {
         return res.redirect('/contact?error=invalid');
     }
-    const messages = readMessages();
+    const messages = await getMessages();
     messages.unshift({
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
         name: name.slice(0, 100),
@@ -281,7 +353,7 @@ app.post('/contact', (req, res) => {
         read: false,
         createdAt: new Date().toISOString()
     });
-    writeMessages(messages);
+    await saveMessages(messages);
 
     const notifyBody = `*New Contact — Ozawa Traders*\n\n` +
         `Name: ${name}\n` +
@@ -327,14 +399,14 @@ const loginLimiter = rateLimit ? rateLimit({
     skipSuccessfulRequests: true
 }) : (_req, _res, next) => next();
 
-app.get('/admin/login', (req, res) => {
+app.get('/admin/login', async (req, res) => {
     if (req.session.user) return res.redirect('/admin');
     res.render('admin/login', { error: null });
 });
 
-app.post('/admin/login', loginLimiter, (req, res) => {
+app.post('/admin/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body;
-    const auth = readAuth();
+    const auth = await getAuth();
     if (username !== auth.username || !bcrypt.compareSync(password || '', auth.passwordHash)) {
         return res.render('admin/login', { error: 'Invalid credentials' });
     }
@@ -342,8 +414,9 @@ app.post('/admin/login', loginLimiter, (req, res) => {
     res.redirect('/admin');
 });
 
-app.post('/admin/logout', requireAuth, (req, res) => {
-    req.session.destroy(() => res.redirect('/admin/login'));
+app.post('/admin/logout', requireAuth, async (req, res) => {
+    req.session = null;
+    res.redirect('/admin/login');
 });
 
 // ----- Admin dashboard -----
@@ -355,8 +428,8 @@ app.get('/admin/home', requireAuth, (_req, res) => res.render('admin/edit-home')
 app.post('/admin/home', requireAuth, upload.fields([
     { name: 'about_image_1', maxCount: 1 },
     { name: 'about_image_2', maxCount: 1 }
-]), (req, res) => {
-    const data = readContent();
+]), async (req, res) => {
+    const data = req.content;
     const f = req.files || {};
     const b = req.body;
 
@@ -390,8 +463,8 @@ app.post('/admin/home', requireAuth, upload.fields([
         title: b[`about_feature_title_${i}`] || '',
         description: b[`about_feature_desc_${i}`] || ''
     }));
-    if (f.about_image_1) data.home.about.image_1 = '/img/uploads/' + f.about_image_1[0].filename;
-    if (f.about_image_2) data.home.about.image_2 = '/img/uploads/' + f.about_image_2[0].filename;
+    if (f.about_image_1) data.home.about.image_1 = await storeUpload(f.about_image_1[0]);
+    if (f.about_image_2) data.home.about.image_2 = await storeUpload(f.about_image_2[0]);
 
     data.home.products_section.enabled = b.products_enabled === 'on' || b.products_enabled === 'true' || b.products_enabled === '1';
     data.home.products_section.subtitle = b.products_subtitle || '';
@@ -417,58 +490,58 @@ app.post('/admin/home', requireAuth, upload.fields([
     data.footer.address = b.footer_address || '';
     data.footer.copyright = b.footer_copyright || '';
 
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Home page updated successfully.');
     res.redirect('/admin/home');
 });
 
 // ----- Hero slider images -----
-app.post('/admin/home/slides/add', requireAuth, upload.single('slide'), (req, res) => {
+app.post('/admin/home/slides/add', requireAuth, upload.single('slide'), async (req, res) => {
     if (!req.file) {
         flash(req, 'error', 'Please choose an image file.');
         return res.redirect('/admin/home');
     }
-    const data = readContent();
+    const data = req.content;
     if (!data.home.hero.slides) data.home.hero.slides = [];
-    data.home.hero.slides.push('/img/uploads/' + req.file.filename);
-    writeContent(data);
+    data.home.hero.slides.push(await storeUpload(req.file));
+    await saveContent(data);
     flash(req, 'success', 'Banner image added.');
     res.redirect('/admin/home');
 });
 
-app.post('/admin/home/slides/replace', requireAuth, upload.single('slide'), (req, res) => {
-    const data = readContent();
+app.post('/admin/home/slides/replace', requireAuth, upload.single('slide'), async (req, res) => {
+    const data = req.content;
     const idx = parseInt(req.body.index, 10);
     if (!req.file || Number.isNaN(idx) || !data.home.hero.slides || !data.home.hero.slides[idx]) {
         flash(req, 'error', 'Invalid replace request.');
         return res.redirect('/admin/home');
     }
-    data.home.hero.slides[idx] = '/img/uploads/' + req.file.filename;
-    writeContent(data);
+    data.home.hero.slides[idx] = await storeUpload(req.file);
+    await saveContent(data);
     flash(req, 'success', 'Banner image replaced.');
     res.redirect('/admin/home');
 });
 
-app.post('/admin/home/slides/delete', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/home/slides/delete', requireAuth, async (req, res) => {
+    const data = req.content;
     const idx = parseInt(req.body.index, 10);
     if (!Number.isNaN(idx) && data.home.hero.slides && data.home.hero.slides[idx]) {
         data.home.hero.slides.splice(idx, 1);
-        writeContent(data);
+        await saveContent(data);
         flash(req, 'success', 'Banner image removed.');
     }
     res.redirect('/admin/home');
 });
 
-app.post('/admin/home/slides/move', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/home/slides/move', requireAuth, async (req, res) => {
+    const data = req.content;
     const idx = parseInt(req.body.index, 10);
     const dir = req.body.dir === 'up' ? -1 : 1;
     const slides = data.home.hero.slides || [];
     const target = idx + dir;
     if (!Number.isNaN(idx) && slides[idx] && target >= 0 && target < slides.length) {
         [slides[idx], slides[target]] = [slides[target], slides[idx]];
-        writeContent(data);
+        await saveContent(data);
     }
     res.redirect('/admin/home');
 });
@@ -476,8 +549,8 @@ app.post('/admin/home/slides/move', requireAuth, (req, res) => {
 // ----- Products CRUD -----
 app.get('/admin/products', requireAuth, (_req, res) => res.render('admin/products'));
 
-app.post('/admin/products/add', requireAuth, upload.single('icon'), (req, res) => {
-    const data = readContent();
+app.post('/admin/products/add', requireAuth, upload.single('icon'), async (req, res) => {
+    const data = req.content;
     const id = (req.body.id || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') || `p${Date.now()}`;
     if (data.products.some(p => p.id === id)) {
         flash(req, 'error', `Product id "${id}" already exists.`);
@@ -487,42 +560,42 @@ app.post('/admin/products/add', requireAuth, upload.single('icon'), (req, res) =
         id,
         title: req.body.title || 'Untitled',
         description: req.body.description || '',
-        icon: req.file ? '/img/uploads/' + req.file.filename : '/img/it.png',
+        icon: req.file ? await storeUpload(req.file) : '/img/it.png',
         href: req.body.href || '#'
     });
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Product added.');
     res.redirect('/admin/products');
 });
 
-app.post('/admin/products/:id/edit', requireAuth, upload.single('icon'), (req, res) => {
-    const data = readContent();
+app.post('/admin/products/:id/edit', requireAuth, upload.single('icon'), async (req, res) => {
+    const data = req.content;
     const p = data.products.find(x => x.id === req.params.id);
     if (!p) return res.redirect('/admin/products');
     p.title = req.body.title || p.title;
     p.description = req.body.description || p.description;
     p.href = req.body.href || p.href;
-    if (req.file) p.icon = '/img/uploads/' + req.file.filename;
-    writeContent(data);
+    if (req.file) p.icon = await storeUpload(req.file);
+    await saveContent(data);
     flash(req, 'success', 'Product updated.');
     res.redirect('/admin/products');
 });
 
-app.post('/admin/products/:id/delete', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/products/:id/delete', requireAuth, async (req, res) => {
+    const data = req.content;
     data.products = data.products.filter(x => x.id !== req.params.id);
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Product deleted.');
     res.redirect('/admin/products');
 });
 
-app.post('/admin/products/reorder', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/products/reorder', requireAuth, async (req, res) => {
+    const data = req.content;
     const order = (req.body.order || '').split(',').filter(Boolean);
     if (order.length) {
         const map = Object.fromEntries(data.products.map(p => [p.id, p]));
         data.products = order.map(id => map[id]).filter(Boolean).concat(data.products.filter(p => !order.includes(p.id)));
-        writeContent(data);
+        await saveContent(data);
     }
     res.json({ ok: true });
 });
@@ -530,56 +603,56 @@ app.post('/admin/products/reorder', requireAuth, (req, res) => {
 // ----- Certificates (homepage carousel) -----
 app.get('/admin/certificates', requireAuth, (_req, res) => res.render('admin/certificates'));
 
-app.post('/admin/certificates/add', requireAuth, upload.single('image'), (req, res) => {
+app.post('/admin/certificates/add', requireAuth, upload.single('image'), async (req, res) => {
     if (!req.file) {
         flash(req, 'error', 'Please choose an image file.');
         return res.redirect('/admin/certificates');
     }
-    const data = readContent();
+    const data = req.content;
     if (!Array.isArray(data.home.certificates)) data.home.certificates = [];
     const id = `c${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
     data.home.certificates.push({
         id,
-        image: '/img/uploads/' + req.file.filename,
+        image: await storeUpload(req.file),
         title: (req.body.title || '').trim(),
         subtitle: (req.body.subtitle || '').trim(),
         year: (req.body.year || '').trim()
     });
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Certificate added.');
     res.redirect('/admin/certificates');
 });
 
-app.post('/admin/certificates/:id/edit', requireAuth, upload.single('image'), (req, res) => {
-    const data = readContent();
+app.post('/admin/certificates/:id/edit', requireAuth, upload.single('image'), async (req, res) => {
+    const data = req.content;
     if (!Array.isArray(data.home.certificates)) data.home.certificates = [];
     const c = data.home.certificates.find(x => x.id === req.params.id);
     if (!c) { flash(req, 'error', 'Certificate not found.'); return res.redirect('/admin/certificates'); }
     c.title = (req.body.title || '').trim();
     c.subtitle = (req.body.subtitle || '').trim();
     c.year = (req.body.year || '').trim();
-    if (req.file) c.image = '/img/uploads/' + req.file.filename;
-    writeContent(data);
+    if (req.file) c.image = await storeUpload(req.file);
+    await saveContent(data);
     flash(req, 'success', 'Certificate updated.');
     res.redirect('/admin/certificates');
 });
 
-app.post('/admin/certificates/:id/delete', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/certificates/:id/delete', requireAuth, async (req, res) => {
+    const data = req.content;
     if (!Array.isArray(data.home.certificates)) data.home.certificates = [];
     data.home.certificates = data.home.certificates.filter(x => x.id !== req.params.id);
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Certificate removed.');
     res.redirect('/admin/certificates');
 });
 
-app.post('/admin/certificates/reorder', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/certificates/reorder', requireAuth, async (req, res) => {
+    const data = req.content;
     const order = (req.body.order || '').split(',').filter(Boolean);
     if (order.length && Array.isArray(data.home.certificates)) {
         const map = Object.fromEntries(data.home.certificates.map(c => [c.id, c]));
         data.home.certificates = order.map(id => map[id]).filter(Boolean).concat(data.home.certificates.filter(c => !order.includes(c.id)));
-        writeContent(data);
+        await saveContent(data);
     }
     res.json({ ok: true });
 });
@@ -587,8 +660,8 @@ app.post('/admin/certificates/reorder', requireAuth, (req, res) => {
 // ----- Customers logos -----
 app.get('/admin/customers', requireAuth, (_req, res) => res.render('admin/customers'));
 
-app.post('/admin/customers/text', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/customers/text', requireAuth, async (req, res) => {
+    const data = req.content;
     const b = req.body;
     data.customers.hero_title = b.hero_title || '';
     data.customers.hero_subtitle = b.hero_subtitle || '';
@@ -612,38 +685,38 @@ app.post('/admin/customers/text', requireAuth, (req, res) => {
     if ('list_title' in data.customers) delete data.customers.list_title;
     if ('list_items' in data.customers) delete data.customers.list_items;
 
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Customers section updated.');
     res.redirect('/admin/customers');
 });
 
-app.post('/admin/customers/add', requireAuth, upload.single('logo'), (req, res) => {
+app.post('/admin/customers/add', requireAuth, upload.single('logo'), async (req, res) => {
     if (!req.file) {
         flash(req, 'error', 'Please choose an image file.');
         return res.redirect('/admin/customers');
     }
-    const data = readContent();
-    data.customers.logos.push('/img/uploads/' + req.file.filename);
-    writeContent(data);
+    const data = req.content;
+    data.customers.logos.push(await storeUpload(req.file));
+    await saveContent(data);
     flash(req, 'success', 'Customer logo added.');
     res.redirect('/admin/customers');
 });
 
-app.post('/admin/customers/delete', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/customers/delete', requireAuth, async (req, res) => {
+    const data = req.content;
     data.customers.logos = data.customers.logos.filter(x => x !== req.body.path);
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Logo removed.');
     res.redirect('/admin/customers');
 });
 
 // ----- Site Settings -----
-app.get('/admin/site', requireAuth, (_req, res) => {
+app.get('/admin/site', requireAuth, async (_req, res) => {
     res.render('admin/site-settings', { maintenanceOn: process.env.MAINTENANCE === 'true' });
 });
 
-app.post('/admin/site/info', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/site/info', requireAuth, async (req, res) => {
+    const data = req.content;
     data.site.name = req.body.name || '';
     data.site.phone = req.body.phone || '';
     data.site.email = req.body.email || '';
@@ -653,13 +726,13 @@ app.post('/admin/site/info', requireAuth, (req, res) => {
     data.site.meta_subtitle = req.body.meta_subtitle || '';
     data.site.meta_description = req.body.meta_description || '';
     data.site.meta_keywords = req.body.meta_keywords || '';
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Site info updated.');
     res.redirect('/admin/site');
 });
 
-app.post('/admin/site/footer', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/site/footer', requireAuth, async (req, res) => {
+    const data = req.content;
     const b = req.body;
     data.footer.description = b.description || '';
     data.footer.address = b.address || '';
@@ -683,12 +756,12 @@ app.post('/admin/site/footer', requireAuth, (req, res) => {
     }).filter(c => c.title || c.links.length);
     data.footer.columns = columns;
 
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Footer updated.');
     res.redirect('/admin/site');
 });
 
-app.post('/admin/site/maintenance', requireAuth, (req, res) => {
+app.post('/admin/site/maintenance', requireAuth, async (req, res) => {
     const target = req.body.value === 'true' ? 'true' : 'false';
     const envPath = ENV_FILE;
     let env = '';
@@ -707,8 +780,8 @@ app.post('/admin/site/maintenance', requireAuth, (req, res) => {
 // ----- Contact -----
 app.get('/admin/contact', requireAuth, (_req, res) => res.render('admin/contact'));
 
-app.post('/admin/contact', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/contact', requireAuth, async (req, res) => {
+    const data = req.content;
     data.contact.hero_title = req.body.hero_title || '';
     data.contact.hero_subtitle = req.body.hero_subtitle || '';
     data.contact.address = req.body.address || '';
@@ -717,7 +790,7 @@ app.post('/admin/contact', requireAuth, (req, res) => {
     data.contact.hours = req.body.hours || '';
     data.contact.map_address = req.body.map_address || '';
     data.contact.map_embed_url = req.body.map_embed_url || '';
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Contact info updated.');
     res.redirect('/admin/contact');
 });
@@ -725,8 +798,8 @@ app.post('/admin/contact', requireAuth, (req, res) => {
 // ----- IT / Software section -----
 app.get('/admin/it', requireAuth, (_req, res) => res.render('admin/edit-it'));
 
-app.post('/admin/it', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/it', requireAuth, async (req, res) => {
+    const data = req.content;
     const b = req.body;
     if (!data.it) data.it = {};
     data.it.hero_badge = b.hero_badge || '';
@@ -777,19 +850,19 @@ app.post('/admin/it', requireAuth, (req, res) => {
         })
         .filter(x => x.title);
 
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'IT section updated.');
     res.redirect('/admin/it');
 });
 
 // ----- Categories (rad/card/physio/ambu/power) -----
-app.get('/admin/category/:key', requireAuth, (req, res) => {
+app.get('/admin/category/:key', requireAuth, async (req, res) => {
     if (!res.locals.content.categories[req.params.key]) return res.redirect('/admin');
     res.render('admin/category', { categoryKey: req.params.key });
 });
 
-app.post('/admin/category/:key/text', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/category/:key/text', requireAuth, async (req, res) => {
+    const data = req.content;
     const k = req.params.key;
     if (!data.categories[k]) return res.redirect('/admin');
     data.categories[k].title = req.body.title || '';
@@ -800,31 +873,31 @@ app.post('/admin/category/:key/text', requireAuth, (req, res) => {
     } else if ('display_mode' in data.categories[k]) {
         delete data.categories[k].display_mode;
     }
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Category updated.');
     res.redirect('/admin/category/' + k);
 });
 
-app.post('/admin/category/:key/add', requireAuth, upload.single('photo'), (req, res) => {
+app.post('/admin/category/:key/add', requireAuth, upload.single('photo'), async (req, res) => {
     if (!req.file) {
         flash(req, 'error', 'Please choose an image file.');
         return res.redirect('/admin/category/' + req.params.key);
     }
-    const data = readContent();
+    const data = req.content;
     const k = req.params.key;
     if (!data.categories[k]) return res.redirect('/admin');
-    data.categories[k].gallery.push('/img/uploads/' + req.file.filename);
-    writeContent(data);
+    data.categories[k].gallery.push(await storeUpload(req.file));
+    await saveContent(data);
     flash(req, 'success', 'Photo added.');
     res.redirect('/admin/category/' + k);
 });
 
-app.post('/admin/category/:key/delete', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/category/:key/delete', requireAuth, async (req, res) => {
+    const data = req.content;
     const k = req.params.key;
     if (!data.categories[k]) return res.redirect('/admin');
     data.categories[k].gallery = data.categories[k].gallery.filter(x => x !== req.body.path);
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Photo removed.');
     res.redirect('/admin/category/' + k);
 });
@@ -834,8 +907,8 @@ function parseHighlights(raw) {
     return (raw || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 }
 
-app.post('/admin/category/:key/product/add', requireAuth, upload.single('image'), (req, res) => {
-    const data = readContent();
+app.post('/admin/category/:key/product/add', requireAuth, upload.single('image'), async (req, res) => {
+    const data = req.content;
     const k = req.params.key;
     if (!data.categories[k]) return res.redirect('/admin');
     if (!Array.isArray(data.categories[k].products)) data.categories[k].products = [];
@@ -848,17 +921,17 @@ app.post('/admin/category/:key/product/add', requireAuth, upload.single('image')
         id,
         title: req.body.title || 'Untitled',
         tagline: req.body.tagline || '',
-        image: req.file ? '/img/uploads/' + req.file.filename : (req.body.image_path || ''),
+        image: req.file ? await storeUpload(req.file) : (req.body.image_path || ''),
         summary: req.body.summary || '',
         highlights: parseHighlights(req.body.highlights)
     });
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Product added.');
     res.redirect('/admin/category/' + k);
 });
 
-app.post('/admin/category/:key/product/:id/edit', requireAuth, upload.single('image'), (req, res) => {
-    const data = readContent();
+app.post('/admin/category/:key/product/:id/edit', requireAuth, upload.single('image'), async (req, res) => {
+    const data = req.content;
     const k = req.params.key;
     if (!data.categories[k] || !Array.isArray(data.categories[k].products)) return res.redirect('/admin');
     const p = data.categories[k].products.find(x => x.id === req.params.id);
@@ -870,39 +943,39 @@ app.post('/admin/category/:key/product/:id/edit', requireAuth, upload.single('im
     p.tagline = req.body.tagline !== undefined ? req.body.tagline : p.tagline;
     p.summary = req.body.summary !== undefined ? req.body.summary : p.summary;
     if (req.body.highlights !== undefined) p.highlights = parseHighlights(req.body.highlights);
-    if (req.file) p.image = '/img/uploads/' + req.file.filename;
+    if (req.file) p.image = await storeUpload(req.file);
     else if (req.body.image_path) p.image = req.body.image_path;
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Product updated.');
     res.redirect('/admin/category/' + k);
 });
 
-app.post('/admin/category/:key/product/:id/delete', requireAuth, (req, res) => {
-    const data = readContent();
+app.post('/admin/category/:key/product/:id/delete', requireAuth, async (req, res) => {
+    const data = req.content;
     const k = req.params.key;
     if (!data.categories[k] || !Array.isArray(data.categories[k].products)) return res.redirect('/admin');
     data.categories[k].products = data.categories[k].products.filter(x => x.id !== req.params.id);
-    writeContent(data);
+    await saveContent(data);
     flash(req, 'success', 'Product removed.');
     res.redirect('/admin/category/' + k);
 });
 
 // ----- Messages (contact form submissions) -----
-app.get('/admin/messages', requireAuth, (_req, res) => {
-    const messages = readMessages();
+app.get('/admin/messages', requireAuth, async (_req, res) => {
+    const messages = await getMessages();
     res.render('admin/messages', { messages });
 });
 
-app.post('/admin/messages/:id/read', requireAuth, (req, res) => {
-    const messages = readMessages();
+app.post('/admin/messages/:id/read', requireAuth, async (req, res) => {
+    const messages = await getMessages();
     const m = messages.find(x => x.id === req.params.id);
-    if (m) { m.read = !m.read; writeMessages(messages); }
+    if (m) { m.read = !m.read; await saveMessages(messages); }
     res.redirect('/admin/messages');
 });
 
-app.post('/admin/messages/:id/delete', requireAuth, (req, res) => {
-    const messages = readMessages().filter(x => x.id !== req.params.id);
-    writeMessages(messages);
+app.post('/admin/messages/:id/delete', requireAuth, async (req, res) => {
+    const messages = (await getMessages()).filter(x => x.id !== req.params.id);
+    await saveMessages(messages);
     flash(req, 'success', 'Message deleted.');
     res.redirect('/admin/messages');
 });
@@ -910,8 +983,8 @@ app.post('/admin/messages/:id/delete', requireAuth, (req, res) => {
 // ----- Settings (change password, replace logo) -----
 app.get('/admin/settings', requireAuth, (_req, res) => res.render('admin/settings', { error: null, success: null }));
 
-app.post('/admin/settings/password', requireAuth, (req, res) => {
-    const auth = readAuth();
+app.post('/admin/settings/password', requireAuth, async (req, res) => {
+    const auth = await getAuth();
     if (!bcrypt.compareSync(req.body.current || '', auth.passwordHash)) {
         return res.render('admin/settings', { error: 'Current password incorrect', success: null });
     }
@@ -919,25 +992,25 @@ app.post('/admin/settings/password', requireAuth, (req, res) => {
         return res.render('admin/settings', { error: 'New password must be at least 6 characters', success: null });
     }
     auth.passwordHash = bcrypt.hashSync(req.body.next, 10);
-    writeAuth(auth);
+    await saveAuth(auth);
     res.render('admin/settings', { error: null, success: 'Password changed.' });
 });
 
-app.post('/admin/settings/logo', requireAuth, upload.single('logo'), (req, res) => {
+app.post('/admin/settings/logo', requireAuth, upload.single('logo'), async (req, res) => {
     if (!req.file) {
         flash(req, 'error', 'Please choose an image file.');
         return res.redirect('/admin/settings');
     }
-    const data = readContent();
-    data.site.logo = '/img/uploads/' + req.file.filename;
-    writeContent(data);
+    const data = req.content;
+    data.site.logo = await storeUpload(req.file);
+    await saveContent(data);
     flash(req, 'success', 'Logo updated.');
     res.redirect('/admin/settings');
 });
 
 // ----- 404 fallback -----
-app.use((req, res) => {
-    res.status(404).render('404', { pageTitle: 'Page Not Found — ' + (readContent().site.name || 'Ozawa Traders') });
+app.use(async (req, res) => {
+    res.status(404).render('404', { pageTitle: 'Page Not Found — ' + ((await getContent()).site.name || 'Ozawa Traders') });
 });
 
 // ----- Errors -----
