@@ -109,7 +109,10 @@ async function readJson(key, fallbackFile) {
         try {
             const url = await blobUrl(key);
             if (!url) return null;
-            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + key.length, { cache: 'no-store' });
+            // Unique per-read query so the CDN never serves a stale (or negatively
+            // cached 404) copy of mutable JSON.
+            const bust = '__b=' + Date.now() + '-' + Math.floor(Math.random() * 1e9);
+            const res = await fetch(url + (url.includes('?') ? '&' : '?') + bust, { cache: 'no-store' });
             if (!res.ok) return null;
             return await res.json();
         } catch (e) { console.error('[blob read]', key, e.message); return null; }
