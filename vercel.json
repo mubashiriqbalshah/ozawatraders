@@ -2,7 +2,13 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "builds": [
-    { "src": "api/index.js", "use": "@vercel/node" }
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "{views,data,img,css,js,fonts,middleware}/**"
+      }
+    }
   ],
   "routes": [
     { "src": "/(.*)", "dest": "api/index.js" }
