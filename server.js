@@ -93,15 +93,31 @@ const MSG_KEY = 'data/messages.json';
 
 let _blob = null;
 function blob() { if (!_blob) _blob = require('@vercel/blob'); return _blob; }
-const _urlCache = {};
 
-async function blobUrl(pathname) {
-    if (_urlCache[pathname]) return _urlCache[pathname];
+// Deterministic public base URL for the store, derived from the RW token
+// (vercel_blob_rw_<STOREID>_<secret>). Avoids list(), which is eventually
+// consistent and was returning stale/empty results right after writes.
+const BLOB_BASE = (() => {
+    const m = /^vercel_blob_rw_([A-Za-z0-9]+)_/.exec(BLOB_TOKEN || '');
+    return m ? `https://${m[1].toLowerCase()}.public.blob.vercel-storage.com` : null;
+})();
+
+async function blobUrl(key) {
+    if (BLOB_BASE) return `${BLOB_BASE}/${key}`;
+    // Fallback if the token format ever changes: resolve via list().
     const { list } = blob();
-    const { blobs } = await list({ prefix: pathname, limit: 100, token: BLOB_TOKEN });
-    const found = blobs.find(b => b.pathname === pathname);
-    if (found) _urlCache[pathname] = found.url;
-    return found ? found.url : null;
+    const { blobs } = await list({ prefix: key, limit: 100, token: BLOB_TOKEN });
+    const f = blobs.find(b => b.pathname === key);
+    return f ? f.url : null;
+}
+
+async function blobHas(key) {
+    const url = await blobUrl(key);
+    if (!url) return false;
+    try {
+        const r = await fetch(url + '?__b=' + Date.now(), { cache: 'no-store' });
+        return r.ok;
+    } catch { return false; }
 }
 
 async function readJson(key, fallbackFile) {
@@ -109,8 +125,7 @@ async function readJson(key, fallbackFile) {
         try {
             const url = await blobUrl(key);
             if (!url) return null;
-            // Unique per-read query so the CDN never serves a stale (or negatively
-            // cached 404) copy of mutable JSON.
+            // Unique per-read query so the CDN never serves a stale copy of mutable JSON.
             const bust = '__b=' + Date.now() + '-' + Math.floor(Math.random() * 1e9);
             const res = await fetch(url + (url.includes('?') ? '&' : '?') + bust, { cache: 'no-store' });
             if (!res.ok) return null;
@@ -124,11 +139,10 @@ async function writeJson(key, fallbackFile, data) {
     const body = JSON.stringify(data, null, 2);
     if (BLOB_ENABLED) {
         const { put } = blob();
-        const r = await put(key, body, {
+        await put(key, body, {
             access: 'public', token: BLOB_TOKEN, contentType: 'application/json',
             addRandomSuffix: false, allowOverwrite: true, cacheControlMaxAge: 0
         });
-        _urlCache[key] = r.url;
         return;
     }
     const tmp = fallbackFile + '.tmp';
@@ -142,11 +156,11 @@ function ensureSeeded() {
     if (!BLOB_ENABLED) return Promise.resolve();
     if (!_seedPromise) _seedPromise = (async () => {
         try {
-            if (!(await blobUrl(CONTENT_KEY))) {
+            if (!(await blobHas(CONTENT_KEY))) {
                 const def = JSON.parse(fs.readFileSync(path.join(BUNDLED_DATA_DIR, 'content.json'), 'utf8'));
                 await writeJson(CONTENT_KEY, null, def);
             }
-            if (!(await blobUrl(AUTH_KEY))) {
+            if (!(await blobHas(AUTH_KEY))) {
                 const bundledAuth = path.join(BUNDLED_DATA_DIR, 'auth.json');
                 let auth;
                 if (process.env.ADMIN_PASSWORD) {
