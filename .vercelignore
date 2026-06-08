@@ -1,0 +1,17 @@
+# Never upload local secrets / runtime data to the Vercel deployment.
+# (The Vercel CLI does not respect .gitignore for uploads.)
+.env
+.env.*
+data/auth.json
+data/messages.json
+data/*.tmp
+data/*.bak.*
+data.bak-*/
+views.bak-*/
+server.js.bak*
+portfolio-output/
+*.bak
+*.bak-*
+*.tar.gz
+.git
+node_modules

@@ -145,9 +145,15 @@ function ensureSeeded() {
             }
             if (!(await blobUrl(AUTH_KEY))) {
                 const bundledAuth = path.join(BUNDLED_DATA_DIR, 'auth.json');
-                const auth = fs.existsSync(bundledAuth)
-                    ? JSON.parse(fs.readFileSync(bundledAuth, 'utf8'))
-                    : { username: process.env.ADMIN_USERNAME || 'admin', passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'changeme-now', 10) };
+                let auth;
+                if (process.env.ADMIN_PASSWORD) {
+                    // Env credentials win (the intended source on Vercel).
+                    auth = { username: process.env.ADMIN_USERNAME || 'admin', passwordHash: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10) };
+                } else if (fs.existsSync(bundledAuth)) {
+                    auth = JSON.parse(fs.readFileSync(bundledAuth, 'utf8'));
+                } else {
+                    auth = { username: process.env.ADMIN_USERNAME || 'admin', passwordHash: bcrypt.hashSync('changeme-now', 10) };
+                }
                 await writeJson(AUTH_KEY, null, auth);
             }
         } catch (e) { console.error('[blob seed]', e.message); }
