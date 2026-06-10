@@ -240,7 +240,7 @@ function sendEmail({ subject, text, replyTo }) {
         secure: process.env.SMTP_SECURE !== 'false',
         auth: { user, pass }
     });
-    transporter.sendMail({
+    return transporter.sendMail({
         from: `"Ozawa Traders Site" <${user}>`,
         to,
         replyTo: replyTo || user,
@@ -259,11 +259,13 @@ function sendWhatsApp(messageText) {
     }
     const https = require('https');
     const url = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(phone)}&text=${encodeURIComponent(messageText)}&apikey=${encodeURIComponent(apiKey)}`;
-    https.get(url, res => {
-        let body = '';
-        res.on('data', c => body += c);
-        res.on('end', () => console.log('[WhatsApp] sent ->', res.statusCode, body.slice(0, 120)));
-    }).on('error', err => console.error('[WhatsApp] error:', err.message));
+    return new Promise(resolve => {
+        https.get(url, res => {
+            let body = '';
+            res.on('data', c => body += c);
+            res.on('end', () => { console.log('[WhatsApp] sent ->', res.statusCode, body.slice(0, 120)); resolve(); });
+        }).on('error', err => { console.error('[WhatsApp] error:', err.message); resolve(); });
+    });
 }
 
 // Memory storage — files are forwarded to Blob (or written to disk locally) by storeUpload().
@@ -400,12 +402,17 @@ app.post('/contact', async (req, res) => {
         (phone ? `Phone: ${phone}\n` : '') +
         (subject ? `Subject: ${subject}\n` : '') +
         `\nMessage:\n${message}`;
-    sendWhatsApp(notifyBody);
-    sendEmail({
-        subject: subject ? `[Ozawa Traders] ${subject}` : '[Ozawa Traders] New contact form message',
-        text: notifyBody + `\n\n---\nSubmitted: ${new Date().toLocaleString()}\nIP: ${(req.headers['x-forwarded-for'] || req.ip || '').toString()}`,
-        replyTo: email
-    });
+    // Await both so the serverless function doesn't freeze mid-send (fire-and-forget
+    // gets killed once the response is sent on Vercel). allSettled = one failing
+    // channel never blocks the other or the redirect.
+    await Promise.allSettled([
+        sendWhatsApp(notifyBody),
+        sendEmail({
+            subject: subject ? `[Ozawa Traders] ${subject}` : '[Ozawa Traders] New contact form message',
+            text: notifyBody + `\n\n---\nSubmitted: ${new Date().toLocaleString()}\nIP: ${(req.headers['x-forwarded-for'] || req.ip || '').toString()}`,
+            replyTo: email
+        })
+    ]);
 
     res.redirect('/contact?sent=1');
 });
