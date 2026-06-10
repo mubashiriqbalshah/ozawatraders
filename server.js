@@ -300,7 +300,7 @@ app.get('/robots.txt', (_req, res) => res.type('text/plain').send(robotsTxt));
 
 app.get('/sitemap.xml', async (_req, res) => {
     const base = 'https://ozawatraders.org';
-    const urls = ['/', '/it', '/customer', '/contact', '/power-cabinet', '/matismart-breaker', '/earth-resistance-tester', '/micro-feeder', '/dilution-tank', '/rad', '/card', '/physio', '/ambu'];
+    const urls = ['/', '/customer', '/contact', '/power-cabinet', '/matismart-breaker', '/earth-resistance-tester', '/micro-feeder', '/dilution-tank', '/rad', '/card', '/physio', '/ambu'];
     const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
         urls.map(u => `  <url><loc>${base}${u}</loc><changefreq>monthly</changefreq></url>`).join('\n') +
         '\n</urlset>\n';
@@ -347,9 +347,15 @@ function flash(req, type, msg) {
     req.session.flash = { type, msg };
 }
 
-// ----- Maintenance mode (toggle via MAINTENANCE=true in .env) -----
+// ----- Maintenance mode (toggle from admin; persisted in content via Blob) -----
+// If the admin has explicitly set the flag (boolean in content), that always wins.
+// Otherwise fall back to the MAINTENANCE env var (used for the initial launch state).
 app.use((req, res, next) => {
-    if (process.env.MAINTENANCE !== 'true') return next();
+    const site = req.content && req.content.site;
+    const on = (site && typeof site.maintenance === 'boolean')
+        ? site.maintenance
+        : process.env.MAINTENANCE === 'true';
+    if (!on) return next();
     if (req.path.startsWith('/admin')) return next();
     res.set('Cache-Control', 'no-store');
     res.render('maintenance');
@@ -359,7 +365,7 @@ app.use((req, res, next) => {
 app.get('/', (_req, res) => res.render('index'));
 app.get('/whoweare', (_req, res) => res.redirect(301, '/'));
 app.get('/customer', (_req, res) => res.render('customer'));
-app.get('/it', (_req, res) => res.render('it'));
+app.get('/it', (_req, res) => res.redirect(301, '/'));
 app.get('/contact', (_req, res) => res.render('contact'));
 
 app.post('/contact', async (req, res) => {
@@ -744,8 +750,9 @@ app.post('/admin/customers/delete', requireAuth, async (req, res) => {
 });
 
 // ----- Site Settings -----
-app.get('/admin/site', requireAuth, async (_req, res) => {
-    res.render('admin/site-settings', { maintenanceOn: process.env.MAINTENANCE === 'true' });
+app.get('/admin/site', requireAuth, async (req, res) => {
+    const maintenanceOn = !!(req.content && req.content.site && req.content.site.maintenance === true);
+    res.render('admin/site-settings', { maintenanceOn });
 });
 
 app.post('/admin/site/info', requireAuth, async (req, res) => {
@@ -795,18 +802,13 @@ app.post('/admin/site/footer', requireAuth, async (req, res) => {
 });
 
 app.post('/admin/site/maintenance', requireAuth, async (req, res) => {
-    const target = req.body.value === 'true' ? 'true' : 'false';
-    const envPath = ENV_FILE;
-    let env = '';
-    try { env = fs.readFileSync(envPath, 'utf8'); } catch {}
-    if (/^MAINTENANCE=/m.test(env)) {
-        env = env.replace(/^MAINTENANCE=.*$/m, 'MAINTENANCE=' + target);
-    } else {
-        env += (env && !env.endsWith('\n') ? '\n' : '') + 'MAINTENANCE=' + target + '\n';
-    }
-    fs.writeFileSync(envPath, env, 'utf8');
-    process.env.MAINTENANCE = target;
-    flash(req, 'success', 'Maintenance mode set to ' + target.toUpperCase() + '. (Restart pm2 for full effect.)');
+    const on = req.body.value === 'true';
+    const data = req.content;
+    if (!data.site) data.site = {};
+    data.site.maintenance = on;
+    await saveContent(data);
+    process.env.MAINTENANCE = on ? 'true' : 'false';
+    flash(req, 'success', 'Maintenance mode turned ' + (on ? 'ON' : 'OFF') + '.');
     res.redirect('/admin/site');
 });
 
@@ -826,66 +828,6 @@ app.post('/admin/contact', requireAuth, async (req, res) => {
     await saveContent(data);
     flash(req, 'success', 'Contact info updated.');
     res.redirect('/admin/contact');
-});
-
-// ----- IT / Software section -----
-app.get('/admin/it', requireAuth, (_req, res) => res.render('admin/edit-it'));
-
-app.post('/admin/it', requireAuth, async (req, res) => {
-    const data = req.content;
-    const b = req.body;
-    if (!data.it) data.it = {};
-    data.it.hero_badge = b.hero_badge || '';
-    data.it.hero_title = b.hero_title || '';
-    data.it.hero_subtitle = b.hero_subtitle || '';
-    data.it.intro_title = b.intro_title || '';
-    data.it.intro_paragraph = b.intro_paragraph || '';
-    data.it.services_subtitle = b.services_subtitle || '';
-    data.it.services_title = b.services_title || '';
-    data.it.services_description = b.services_description || '';
-
-    // Services: one per line as "Title | Description"
-    data.it.services = (b.services || '')
-        .split(/\r?\n/)
-        .map(line => line.trim())
-        .filter(Boolean)
-        .map(line => {
-            const parts = line.split('|').map(p => p.trim());
-            return { title: parts[0] || '', description: parts[1] || '' };
-        })
-        .filter(s => s.title);
-
-    if (!data.it.tenders) data.it.tenders = {};
-    data.it.tenders.subtitle = b.tenders_subtitle || '';
-    data.it.tenders.title = b.tenders_title || '';
-    data.it.tenders.description = b.tenders_description || '';
-    data.it.tenders.cta_text = b.tenders_cta_text || '';
-    data.it.tenders.cta_href = b.tenders_cta_href || '';
-    data.it.tenders.points = (b.tenders_points || '')
-        .split(/\r?\n/)
-        .map(s => s.trim())
-        .filter(Boolean);
-
-    data.it.tenders.filter_hint = b.tenders_filter_hint || '';
-    data.it.tenders.listings_title = b.tenders_listings_title || '';
-    data.it.tenders.listings_note = b.tenders_listings_note || '';
-    data.it.tenders.live_text = b.tenders_live_text || '';
-    data.it.tenders.live_href = b.tenders_live_href || '';
-
-    // Tender listings: one per line as "Title | Department | Ref | Category | Date | URL"
-    data.it.tenders.listings = (b.tenders_listings || '')
-        .split(/\r?\n/)
-        .map(line => line.trim())
-        .filter(Boolean)
-        .map(line => {
-            const p = line.split('|').map(x => x.trim());
-            return { title: p[0] || '', department: p[1] || '', ref: p[2] || '', category: p[3] || '', date: p[4] || '', url: p[5] || '' };
-        })
-        .filter(x => x.title);
-
-    await saveContent(data);
-    flash(req, 'success', 'IT section updated.');
-    res.redirect('/admin/it');
 });
 
 // ----- Categories (rad/card/physio/ambu/power) -----

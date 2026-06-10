@@ -175,10 +175,6 @@
             "href": "/"
           },
           {
-            "label": "IT Solutions",
-            "href": "/it"
-          },
-          {
             "label": "Customers",
             "href": "/customer"
           },
@@ -303,77 +299,6 @@
     "hours": "Mon - Fri: 9:00 AM - 5:00 PM (Sat- Sun Off)",
     "map_address": "56, A1 Commercial Area, Township, Lahore-Pakistan",
     "map_embed_url": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3403.419318737997!2d74.31824232540325!3d31.457649474242757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391906b0f774c543%3A0x701ae66f36a59722!2sOzawa%20Traders!5e0!3m2!1sen!2s!4v1778070946675!5m2!1sen!2s"
-  },
-  "it": {
-    "hero_badge": "IT & Software Division",
-    "hero_title": "IT, Software & Government e-Procurement Solutions",
-    "hero_subtitle": "Ozawa Traders' IT division designs and delivers custom software, web portals and enterprise systems — and actively participates in Government of Pakistan software & IT tenders published on PPRA.",
-    "intro_title": "A technology partner for the public & private sector",
-    "intro_paragraph": "Building on 25+ years of trust supplying Pakistan's government hospitals, utilities and industries, Ozawa Traders now offers a dedicated IT & Software division. We help public-sector departments and private organizations procure, build and maintain reliable software — and we prepare and submit compliant bids for relevant government software tenders through the PPRA e-procurement system.",
-    "services_subtitle": "What We Offer",
-    "services_title": "Our IT & Software Services",
-    "services_description": "End-to-end software capability — from requirement analysis and development to deployment, training and after-sales support.",
-    "services": [],
-    "tenders": {
-      "subtitle": "Government Tenders",
-      "title": "Software & IT Tenders via PPRA",
-      "description": "We continuously monitor software and IT tenders advertised by federal and provincial departments on the Public Procurement Regulatory Authority (PPRA) portal. As a supplier with a strong public-sector track record, Ozawa Traders prepares compliant bids and delivers transparently under PPRA regulations.",
-      "points": [
-        "Active monitoring of software & IT tenders on the PPRA portal",
-        "PPRA-compliant bidding, documentation and delivery",
-        "Proven track record supplying government hospitals, utilities & departments",
-        "End-to-end delivery — from bid to deployment and after-sales support"
-      ],
-      "cta_text": "View Tenders on PPRA",
-      "cta_href": "https://epms.ppra.gov.pk/public/tenders/active-tenders",
-      "filter_hint": "On the PPRA portal, set the Sector filter to \"Info and Comm Tech\" to see only IT & software tenders.",
-      "listings_title": "Government Software & IT Tenders on PPRA",
-      "listings_note": "Representative IT & software tenders published on the PPRA e-procurement portal (EPADS). Listings change daily — click any item or the button below to view live opportunities we actively bid on.",
-      "live_text": "Browse Live Tenders on PPRA",
-      "live_href": "https://epms.ppra.gov.pk/public/tenders/active-tenders",
-      "listings": [
-        {
-          "title": "Online Services, Software & License Fees",
-          "department": "Pakistan Institute of Development Economics (PIDE)",
-          "ref": "GS/06/2026",
-          "category": "Software / Services",
-          "date": "2026",
-          "url": "https://epms.ppra.gov.pk/public/tenders/active-tenders"
-        },
-        {
-          "title": "Purchase of IT Equipment",
-          "department": "Capital Development Authority (CDA), Islamabad",
-          "ref": "TS0000000720E",
-          "category": "ICT / Goods",
-          "date": "2026",
-          "url": "https://epms.ppra.gov.pk/public/tenders/tender-details/TS0000000720E"
-        },
-        {
-          "title": "CCTV Monitoring Room Modernization & System Integration",
-          "department": "Federal Board of Revenue (FBR)",
-          "ref": "F-26051890958",
-          "category": "ICT / Works",
-          "date": "Closing Jun 2026",
-          "url": "https://epms.ppra.gov.pk/public/tenders/active-tenders"
-        },
-        {
-          "title": "Supply & Installation of Computing Lab Equipment",
-          "department": "PNEC, National University of Sciences & Technology (NUST)",
-          "ref": "NA/402/06/2025-26",
-          "category": "ICT / Goods",
-          "date": "Closing Jun 2026",
-          "url": "https://epms.ppra.gov.pk/public/tenders/active-tenders"
-        },
-        {
-          "title": "ICT Services & Digital Solutions",
-          "department": "Pakistan Digital Authority (PDA)",
-          "ref": "PDA/TDRS/2025-26",
-          "category": "ICT / Services",
-          "date": "2026",
-          "url": "https://epms.ppra.gov.pk/public/tenders/active-tenders"
-        }
-      ]
-    }
   },
   "categories": {
     "rad": {

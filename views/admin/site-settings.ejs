@@ -183,7 +183,7 @@
                 <input type="hidden" name="value" value="<%= maintenanceOn ? 'false' : 'true' %>">
                 <button class="<%= maintenanceOn ? 'btn-secondary' : 'btn-primary' %>"><%= maintenanceOn ? 'Turn OFF Maintenance (Site Live)' : 'Turn ON Maintenance' %></button>
             </form>
-            <p class="text-xs text-navy-500 mt-3">Note: takes effect immediately for new requests. <code>.env</code> file is also updated so the change persists across server restarts.</p>
+            <p class="text-xs text-navy-500 mt-3">Note: saved to site content so the change persists on Vercel. Takes effect within a few seconds for new requests.</p>
         </div>
     </main>
 </body>
